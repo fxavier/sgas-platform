@@ -32,14 +32,14 @@ export default function MembrosEquipaPage() {
   const tenantId = 'test-tenant-id';
 
   const {
-    membrosEquipa,
+    data: membrosEquipa,
     isLoading,
     error,
-    fetchMembrosEquipa,
-    createMembroEquipa,
-    updateMembroEquipa,
-    deleteMembroEquipa,
-  } = useMembrosEquipa({ tenantId });
+    fetchData: fetchMembrosEquipa,
+    create: createMembroEquipa,
+    update: updateMembroEquipa,
+    remove: deleteMembroEquipa,
+  } = useMembrosEquipa();
 
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);

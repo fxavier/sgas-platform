@@ -96,7 +96,7 @@ export const NAV_ITEMS = [
               {
                 title:
                   'FR.AS.002 - Identificação e Avaliação de impactos e riscos ambientais e sociais',
-                href: '/esms-elements/risks-impacts/pr-as-002/fr-as-002',
+                href: '/esms-elements/identification-of-risks-impacts/pr-as-002/fr-as-002',
               },
             ],
           },

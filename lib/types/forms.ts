@@ -141,3 +141,144 @@ export interface TabelaAccao {
   prazo: Date;
   dataConclusao: Date;
 }
+
+export interface FichaInformacaoAmbientalPreliminar {
+  id: string;
+  tenantId: string;
+  projectId: string;
+  nomeActividade: string;
+  tipoActividade:
+    | 'TURISTICA'
+    | 'INDUSTRIAL'
+    | 'AGRO_PECUARIA'
+    | 'ENERGETICA'
+    | 'SERVICOS'
+    | 'OUTRA';
+  proponentes?: string;
+  endereco: string;
+  telefone?: string;
+  fax?: string;
+  telemovel?: string;
+  email: string;
+  bairroActividade: string;
+  vilaActividade: string;
+  cidadeActividade: string;
+  localidadeActividade?: string;
+  distritoActividade?: string;
+  provinciaActividade:
+    | 'MAPUTO'
+    | 'MAPUTO_CIDADE'
+    | 'GAZA'
+    | 'INHAMBANE'
+    | 'SOFALA'
+    | 'MANICA'
+    | 'TETE'
+    | 'ZAMBEZIA'
+    | 'NAMPULA'
+    | 'CABO_DELGADO'
+    | 'NIASSA';
+  coordenadasGeograficas?: string;
+  meioInsercao: 'RURAL' | 'URBANO' | 'PERIURBANO';
+  enquadramentoOrcamentoTerritorial:
+    | 'ESPACO_HABITACIONAL'
+    | 'INDUSTRIAL'
+    | 'SERVICOS'
+    | 'OUTRO';
+  descricaoActividade?: string;
+  actividadesAssociadas?: string;
+  descricaoTecnologiaConstrucaoOperacao?: string;
+  actividadesComplementaresPrincipais?: string;
+  tipoQuantidadeOrigemMaoDeObra?: string;
+  tipoQuantidadeOrigemProvenienciaMateriasPrimas?: string;
+  quimicosUtilizados?: string;
+  tipoOrigemConsumoAguaEnergia?: string;
+  origemCombustiveisLubrificantes?: string;
+  outrosRecursosNecessarios?: string;
+  posseDeTerra?: string;
+  alternativasLocalizacaoActividade?: string;
+  descricaoBreveSituacaoAmbientalReferenciaLocalRegional?: string;
+  caracteristicasFisicasLocalActividade?:
+    | 'PLANICIE'
+    | 'PLANALTO'
+    | 'VALE'
+    | 'MONTANHA';
+  ecosistemasPredominantes?: 'FLUVIAL' | 'LACUSTRE' | 'MARINHO' | 'TERRESTRE';
+  zonaLocalizacao?: 'COSTEIRA' | 'INTERIOR' | 'ILHA';
+  tipoVegetacaoPredominante?: 'FLORESTA' | 'SAVANA' | 'OUTRO';
+  usoSolo?:
+    | 'AGROPECUARIO'
+    | 'HABITACIONAL'
+    | 'INDUSTRIAL'
+    | 'PROTECCAO'
+    | 'OUTRO';
+  infraestruturaExistenteAreaActividade?: string;
+  informacaoComplementarAtravesMaps?: string;
+  valorTotalInvestimento?: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface IdentificacaoAvaliacaoDeRiscosImapctosAmbientaisSociais {
+  id: string;
+  numeroReferencia?: string;
+  processo?: string;
+  actiactividade: string;
+  riscosImpactosId: string;
+  riscosImpactos: {
+    id: string;
+    descricao: string;
+  };
+  realOuPotencial?: string;
+  condicao: 'NORMAL' | 'ANORMAL' | 'EMERGENCIA';
+  factorAmbientalImpactadoId: string;
+  factorAmbientalImpactado: {
+    id: string;
+    descricao: string;
+  };
+  faseProjecto:
+    | 'PRE_CONSTRUCAO'
+    | 'CONSTRUCAO'
+    | 'OPERACAO'
+    | 'DESATIVACAO'
+    | 'ENCERRAMENTO'
+    | 'RESTAURACAO';
+  estatuto: 'POSITIVO' | 'NEGATIVO';
+  extensao: 'LOCAL' | 'REGIONAL' | 'NACIONAL' | 'GLOBAL';
+  duduacao: 'CURTO_PRAZO' | 'MEDIO_PRAZO' | 'LONGO_PRAZO';
+  intensidade: 'BAIXA' | 'MEDIA' | 'ALTA';
+  probabilidade:
+    | 'IMPROVAVEL'
+    | 'PROVAVEL'
+    | 'ALTAMENTE_PROVAVEL'
+    | 'DEFINITIVA';
+  significancia?: string;
+  duracaoRisco?: string;
+  descricaoMedidas: string;
+  respresponsavelonsible?: string;
+  prazo: Date;
+  referenciaDocumentoControl?: string;
+  legislacaoMocambicanaAplicavel?: string;
+  observacoes: string;
+  tenantId: string;
+  projectId: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface RiscosImpactos {
+  id: string;
+  descricao: string;
+  createdAt: Date;
+  updatedAt: Date;
+  tenantId: string;
+  projectId: string;
+}
+
+export interface FactorAmbientalImpactado {
+  id: string;
+  descricao: string;
+  createdAt: Date;
+  updatedAt: Date;
+  tenantId: string;
+  projectId: string;
+}
