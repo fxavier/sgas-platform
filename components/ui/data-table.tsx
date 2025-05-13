@@ -8,7 +8,7 @@ import {
   SortingState,
   getFilteredRowModel,
   ColumnFiltersState,
-} from "@tanstack/react-table";
+} from '@tanstack/react-table';
 import {
   Table,
   TableBody,
@@ -16,12 +16,19 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { useState } from "react";
-import { Download } from "lucide-react";
+} from '@/components/ui/table';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { useState } from 'react';
+import { Download } from 'lucide-react';
 import * as XLSX from 'xlsx';
+
+// Extend the ColumnMeta type to include hidden property
+declare module '@tanstack/react-table' {
+  interface ColumnMeta<TData, TValue> {
+    hidden?: boolean;
+  }
+}
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -55,64 +62,63 @@ export function DataTable<TData, TValue>({
   });
 
   const handleExportToExcel = () => {
-    // Get visible columns
-    const visibleColumns = columns.filter(col => !col.meta?.hidden);
-    
-    // Transform data for export
-    const exportData = table.getFilteredRowModel().rows.map(row => {
+    // Simpler export approach that doesn't rely on column accessors directly
+    const exportData = table.getFilteredRowModel().rows.map((row) => {
+      // Create a simplified object from the row data
       const rowData: Record<string, any> = {};
-      visibleColumns.forEach(col => {
-        const key = String(col.accessorKey);
-        const cell = row.getValue(key);
-        
-        // Format cell value if a formatter exists
-        if (col.cell && typeof col.cell === 'function') {
-          const formattedValue = flexRender(col.cell, { row: row, getValue: () => cell });
-          rowData[key] = formattedValue;
-        } else {
-          rowData[key] = cell;
+
+      // Get all cell values from the row
+      row.getAllCells().forEach((cell) => {
+        if (cell.column.id && !cell.column.columnDef.meta?.hidden) {
+          // Use the column ID as the key
+          const key = cell.column.id;
+          // Use the raw value
+          rowData[key] = cell.getValue();
         }
       });
+
       return rowData;
     });
 
     // Create worksheet
     const ws = XLSX.utils.json_to_sheet(exportData);
-    
+
     // Create workbook
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Data');
-    
+
     // Save file
     XLSX.writeFile(wb, `${filename}.xlsx`);
   };
 
   return (
     <div>
-      <div className="flex items-center justify-between py-4">
+      <div className='flex items-center justify-between py-4'>
         {searchKey && (
           <Input
-            placeholder="Pesquisar"
-            value={(table.getColumn(searchKey)?.getFilterValue() as string) ?? ""}
+            placeholder='Pesquisar'
+            value={
+              (table.getColumn(searchKey)?.getFilterValue() as string) ?? ''
+            }
             onChange={(event) =>
               table.getColumn(searchKey)?.setFilterValue(event.target.value)
             }
-            className="max-w-sm"
+            className='max-w-sm'
           />
         )}
-        
+
         <Button
-          variant="outline"
-          size="sm"
+          variant='outline'
+          size='sm'
           onClick={handleExportToExcel}
-          className="ml-auto"
+          className='ml-auto'
         >
-          <Download className="mr-2 h-4 w-4" />
+          <Download className='mr-2 h-4 w-4' />
           Exportar Excel
         </Button>
       </div>
 
-      <div className="rounded-md border">
+      <div className='rounded-md border'>
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -137,7 +143,7 @@ export function DataTable<TData, TValue>({
               table.getRowModel().rows.map((row) => (
                 <TableRow
                   key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
+                  data-state={row.getIsSelected() && 'selected'}
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
@@ -153,7 +159,7 @@ export function DataTable<TData, TValue>({
               <TableRow>
                 <TableCell
                   colSpan={columns.length}
-                  className="h-24 text-center"
+                  className='h-24 text-center'
                 >
                   Nenhum resultado encontrado.
                 </TableCell>
@@ -162,18 +168,18 @@ export function DataTable<TData, TValue>({
           </TableBody>
         </Table>
       </div>
-      <div className="flex items-center justify-end space-x-2 py-4">
+      <div className='flex items-center justify-end space-x-2 py-4'>
         <Button
-          variant="outline"
-          size="sm"
+          variant='outline'
+          size='sm'
           onClick={() => table.previousPage()}
           disabled={!table.getCanPreviousPage()}
         >
           Anterior
         </Button>
         <Button
-          variant="outline"
-          size="sm"
+          variant='outline'
+          size='sm'
           onClick={() => table.nextPage()}
           disabled={!table.getCanNextPage()}
         >

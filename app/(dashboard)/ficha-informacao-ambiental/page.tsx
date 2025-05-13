@@ -101,7 +101,10 @@ export default function FichaInformacaoAmbientalPage() {
           </DialogHeader>
           <FichaInformacaoAmbientalForm
             initialData={selectedItem || undefined}
-            onSuccess={handleFormSuccess}
+            onSubmit={async (data) => {
+              await new Promise((resolve) => setTimeout(resolve, 500)); // Simulate API call
+              handleFormSuccess();
+            }}
             onCancel={handleFormCancel}
           />
         </DialogContent>
