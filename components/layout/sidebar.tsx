@@ -65,11 +65,19 @@ export function Sidebar({ isOpen, tenant }: SidebarProps) {
     return pathname === path;
   };
 
-  const getIcon = (iconName: string) => {
+  const getIcon = (iconName: string | undefined) => {
+    if (!iconName) return FileText;
+
     const icons: Record<string, any> = {
       LayoutDashboard,
       FileText,
       FileStack,
+      Landmark,
+      UserCircle,
+      LogOut,
+      ChevronDown,
+      ChevronLeft,
+      ChevronRight,
     };
     return icons[iconName] || FileText;
   };
@@ -79,7 +87,7 @@ export function Sidebar({ isOpen, tenant }: SidebarProps) {
   };
 
   const renderMenuItem = (item: MenuItem, level: number = 0) => {
-    const Icon = item.icon ? getIcon(item.icon) : null;
+    const Icon = getIcon(item.icon);
     const hasSubmenu = item.submenu && item.submenu.length > 0;
     const isMenuOpen = openMenus.includes(item.href);
 

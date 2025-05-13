@@ -50,7 +50,7 @@ export const identificacaoAvaliacaoRiscosSchema = z.object({
   duracaoRisco: z.string().optional(),
   descricaoMedidas: z.string().min(1, 'Descrição das Medidas é obrigatória'),
   respresponsavelonsible: z.string().optional(),
-  prazo: z.date(),
+  prazo: z.coerce.date(),
   referenciaDocumentoControl: z.string().optional(),
   legislacaoMocambicanaAplicavel: z.string().optional(),
   observacoes: z.string().min(1, 'Observações são obrigatórias'),

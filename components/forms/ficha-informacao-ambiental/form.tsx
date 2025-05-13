@@ -1,13 +1,19 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Check, ChevronsUpDown } from 'lucide-react';
-import { FichaInformacaoAmbientalPreliminar } from '@/lib/types/forms';
-import { useFormApi } from '@/lib/hooks/use-form-api';
-import { FormSection } from '../form-section';
-import { FormRow } from '../form-row';
-import { FormField } from '../form-field';
-import { FormActions } from '../form-actions';
+import { useEffect, useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import {
@@ -17,7 +23,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Button } from '@/components/ui/button';
 import {
   Popover,
   PopoverContent,
@@ -31,798 +36,738 @@ import {
   CommandItem,
   CommandList,
 } from '@/components/ui/command';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Check, ChevronsUpDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Skeleton } from '@/components/ui/skeleton';
+import {
+  fichaInformacaoSchema,
+  type FichaInformacaoFormData,
+} from '@/lib/validations/ficha-informacao';
+import { useTenantProjectContext } from '@/lib/context/tenant-project-context';
+import { FormSection } from '@/components/forms/form-section';
+import { FormRow } from '@/components/forms/form-row';
+import { CustomFormField } from '@/components/forms/form-field';
+
+interface FichaInformacaoAmbientalFormProps {
+  initialData?: FichaInformacaoFormData;
+  onSubmit: (data: FichaInformacaoFormData) => Promise<void>;
+  onCancel: () => void;
+  isLoading?: boolean;
+}
 
 interface Tenant {
   id: string;
   name: string;
-  slug: string;
 }
 
 interface Project {
   id: string;
   name: string;
-  tenantId: string;
-}
-
-interface FichaInformacaoAmbientalFormProps {
-  initialData?: Partial<FichaInformacaoAmbientalPreliminar>;
-  onSuccess?: (data: FichaInformacaoAmbientalPreliminar) => void;
-  onCancel?: () => void;
-  tenantId?: string;
-  projectId?: string;
 }
 
 export function FichaInformacaoAmbientalForm({
   initialData,
-  onSuccess,
+  onSubmit,
   onCancel,
-  tenantId: initialTenantId,
-  projectId: initialProjectId,
+  isLoading,
 }: FichaInformacaoAmbientalFormProps) {
-  // Form data state
-  const [formData, setFormData] = useState<
-    Partial<FichaInformacaoAmbientalPreliminar>
-  >({
-    ...initialData,
-  });
-
-  // Tenant and project selection state
+  const router = useRouter();
+  const { currentTenantId, currentProjectId } = useTenantProjectContext();
   const [tenants, setTenants] = useState<Tenant[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
+  const [isLoadingTenants, setIsLoadingTenants] = useState(true);
+  const [isLoadingProjects, setIsLoadingProjects] = useState(false);
   const [selectedTenantId, setSelectedTenantId] = useState<string | undefined>(
-    initialTenantId
+    currentTenantId || undefined
   );
   const [selectedProjectId, setSelectedProjectId] = useState<
     string | undefined
-  >(initialProjectId);
-  const [isLoadingTenants, setIsLoadingTenants] = useState(true);
-  const [isLoadingProjects, setIsLoadingProjects] = useState(false);
-  const [tenantOpen, setTenantOpen] = useState(false);
-  const [projectOpen, setProjectOpen] = useState(false);
+  >(currentProjectId || undefined);
 
-  const { create, update, isLoading, error } =
-    useFormApi<FichaInformacaoAmbientalPreliminar>({
-      endpoint: 'ficha-informacao-ambiental',
-    });
+  const form = useForm<FichaInformacaoFormData>({
+    resolver: zodResolver(fichaInformacaoSchema),
+    defaultValues: {
+      tenantId: currentTenantId || undefined,
+      projectId: currentProjectId || undefined,
+      nomeActividade: initialData?.nomeActividade || '',
+      tipoActividade: initialData?.tipoActividade || 'TURISTICA',
+      proponentes: initialData?.proponentes || '',
+      endereco: initialData?.endereco || '',
+      telefone: initialData?.telefone || '',
+      fax: initialData?.fax || '',
+      telemovel: initialData?.telemovel || '',
+      email: initialData?.email || '',
+      bairroActividade: initialData?.bairroActividade || '',
+      vilaActividade: initialData?.vilaActividade || '',
+      cidadeActividade: initialData?.cidadeActividade || '',
+      localidadeActividade: initialData?.localidadeActividade || '',
+      distritoActividade: initialData?.distritoActividade || '',
+      provinciaActividade: initialData?.provinciaActividade || 'MAPUTO',
+      coordenadasGeograficas: initialData?.coordenadasGeograficas || '',
+      meioInsercao: initialData?.meioInsercao || 'RURAL',
+      enquadramentoOrcamentoTerritorial:
+        initialData?.enquadramentoOrcamentoTerritorial || 'ESPACO_HABITACIONAL',
+      descricaoActividade: initialData?.descricaoActividade || '',
+      actividadesAssociadas: initialData?.actividadesAssociadas || '',
+      descricaoTecnologiaConstrucaoOperacao:
+        initialData?.descricaoTecnologiaConstrucaoOperacao || '',
+      actividadesComplementaresPrincipais:
+        initialData?.actividadesComplementaresPrincipais || '',
+      tipoQuantidadeOrigemMaoDeObra:
+        initialData?.tipoQuantidadeOrigemMaoDeObra || '',
+      tipoQuantidadeOrigemProvenienciaMateriasPrimas:
+        initialData?.tipoQuantidadeOrigemProvenienciaMateriasPrimas || '',
+      quimicosUtilizados: initialData?.quimicosUtilizados || '',
+      tipoOrigemConsumoAguaEnergia:
+        initialData?.tipoOrigemConsumoAguaEnergia || '',
+      origemCombustiveisLubrificantes:
+        initialData?.origemCombustiveisLubrificantes || '',
+      outrosRecursosNecessarios: initialData?.outrosRecursosNecessarios || '',
+      posseDeTerra: initialData?.posseDeTerra || '',
+      alternativasLocalizacaoActividade:
+        initialData?.alternativasLocalizacaoActividade || '',
+      descricaoBreveSituacaoAmbientalReferenciaLocalRegional:
+        initialData?.descricaoBreveSituacaoAmbientalReferenciaLocalRegional ||
+        '',
+      caracteristicasFisicasLocalActividade:
+        initialData?.caracteristicasFisicasLocalActividade || 'PLANICIE',
+      ecosistemasPredominantes:
+        initialData?.ecosistemasPredominantes || 'FLUVIAL',
+      zonaLocalizacao: initialData?.zonaLocalizacao || 'COSTEIRA',
+      tipoVegetacaoPredominante:
+        initialData?.tipoVegetacaoPredominante || 'FLORESTA',
+      usoSolo: initialData?.usoSolo || 'AGROPECUARIO',
+      infraestruturaExistenteAreaActividade:
+        initialData?.infraestruturaExistenteAreaActividade || '',
+      informacaoComplementarAtravesMaps:
+        initialData?.informacaoComplementarAtravesMaps || '',
+      valorTotalInvestimento: initialData?.valorTotalInvestimento || 0,
+    },
+  });
 
-  // Fetch tenants on component mount
   useEffect(() => {
     const fetchTenants = async () => {
       try {
-        setIsLoadingTenants(true);
         const response = await fetch('/api/tenants');
-
-        if (!response.ok) {
-          throw new Error(`Failed to fetch tenants: ${response.status}`);
-        }
-
         const data = await response.json();
-
-        if (Array.isArray(data)) {
-          setTenants(data);
-
-          // If initialTenantId is provided, update formData
-          if (initialTenantId) {
-            setSelectedTenantId(initialTenantId);
-            setFormData(
-              (prev: Partial<FichaInformacaoAmbientalPreliminar>) => ({
-                ...prev,
-                tenantId: initialTenantId,
-              })
-            );
-          }
-        }
+        setTenants(data);
       } catch (error) {
         console.error('Error fetching tenants:', error);
+        toast.error('Erro ao carregar tenants');
       } finally {
         setIsLoadingTenants(false);
       }
     };
 
     fetchTenants();
-  }, [initialTenantId]);
+  }, []);
 
-  // Fetch projects when tenant changes
   useEffect(() => {
-    if (!selectedTenantId) {
-      setProjects([]);
-      return;
-    }
-
     const fetchProjects = async () => {
+      if (!selectedTenantId) return;
+
       setIsLoadingProjects(true);
       try {
         const response = await fetch(
           `/api/projects?tenantId=${selectedTenantId}`
         );
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch projects');
-        }
-
         const data = await response.json();
         setProjects(data);
-
-        // If initialProjectId is provided and matches the current tenant, update formData
-        if (initialProjectId) {
-          const projectExists = data.some(
-            (p: Project) => p.id === initialProjectId
-          );
-          if (projectExists) {
-            setSelectedProjectId(initialProjectId);
-            setFormData(
-              (prev: Partial<FichaInformacaoAmbientalPreliminar>) => ({
-                ...prev,
-                projectId: initialProjectId,
-              })
-            );
-          } else {
-            // Clear selected project if it doesn't belong to the selected tenant
-            setSelectedProjectId(undefined);
-            setFormData(
-              (prev: Partial<FichaInformacaoAmbientalPreliminar>) => ({
-                ...prev,
-                projectId: undefined,
-              })
-            );
-          }
-        }
       } catch (error) {
         console.error('Error fetching projects:', error);
+        toast.error('Erro ao carregar projetos');
       } finally {
         setIsLoadingProjects(false);
       }
     };
 
     fetchProjects();
-  }, [selectedTenantId, initialProjectId]);
+  }, [selectedTenantId]);
 
-  // Find the current tenant and project objects
-  const currentTenant = tenants.find(
-    (tenant) => tenant.id === selectedTenantId
-  );
-  const currentProject = projects.find(
-    (project) => project.id === selectedProjectId
-  );
-
-  // Handle tenant selection
   const handleTenantSelect = (tenantId: string) => {
     setSelectedTenantId(tenantId);
-    setFormData((prev: Partial<FichaInformacaoAmbientalPreliminar>) => ({
-      ...prev,
-      tenantId,
-    }));
-    setTenantOpen(false);
-
-    // Clear project when tenant changes
     setSelectedProjectId(undefined);
-    setFormData((prev: Partial<FichaInformacaoAmbientalPreliminar>) => ({
-      ...prev,
-      projectId: undefined,
-    }));
+    form.setValue('tenantId', tenantId);
+    form.setValue('projectId', '');
   };
 
-  // Handle project selection
   const handleProjectSelect = (projectId: string) => {
     setSelectedProjectId(projectId);
-    setFormData((prev: Partial<FichaInformacaoAmbientalPreliminar>) => ({
-      ...prev,
-      projectId,
-    }));
-    setProjectOpen(false);
+    form.setValue('projectId', projectId);
   };
 
-  const handleChange = (
-    field: keyof FichaInformacaoAmbientalPreliminar,
-    value: any
-  ) => {
-    setFormData((prev: Partial<FichaInformacaoAmbientalPreliminar>) => ({
-      ...prev,
-      [field]: value,
-    }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (data: FichaInformacaoFormData) => {
     try {
-      const result = formData.id
-        ? await update(
-            formData.id,
-            formData as FichaInformacaoAmbientalPreliminar
-          )
-        : await create(formData as FichaInformacaoAmbientalPreliminar);
-
-      onSuccess?.(result);
-    } catch (err) {
-      console.error('Form submission failed:', err);
-      // Error is handled by the hook
+      await onSubmit(data);
+      toast.success('Formulário salvo com sucesso');
+      router.refresh();
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      toast.error('Erro ao salvar formulário');
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className='space-y-6'>
-      <FormSection title='Selecione o Tenant e Projeto'>
-        <FormRow>
-          <FormField label='Tenant' required>
-            <Popover open={tenantOpen} onOpenChange={setTenantOpen}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant='outline'
-                  role='combobox'
-                  aria-expanded={tenantOpen}
-                  className='w-full justify-between'
-                  disabled={isLoadingTenants}
-                >
-                  {isLoadingTenants ? (
-                    <Skeleton className='h-4 w-[160px]' />
-                  ) : currentTenant ? (
-                    currentTenant.name
-                  ) : (
-                    'Selecionar Tenant'
-                  )}
-                  <ChevronsUpDown className='ml-2 h-4 w-4 shrink-0 opacity-50' />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className='w-full p-0'>
-                <Command>
-                  <CommandInput placeholder='Buscar tenant...' />
-                  <CommandList>
-                    <CommandEmpty>Nenhum tenant encontrado.</CommandEmpty>
-                    <CommandGroup>
-                      {tenants.map((tenant) => (
-                        <CommandItem
-                          key={tenant.id}
-                          value={tenant.id}
-                          onSelect={() => handleTenantSelect(tenant.id)}
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(handleSubmit)} className='space-y-8'>
+        <FormSection title='Informações Básicas'>
+          <FormRow>
+            <FormField
+              control={form.control}
+              name='tenantId'
+              render={({ field }) => (
+                <FormItem className='flex flex-col'>
+                  <FormLabel>Tenant</FormLabel>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          variant='outline'
+                          role='combobox'
+                          className={cn(
+                            'w-full justify-between',
+                            !field.value && 'text-muted-foreground'
+                          )}
                         >
-                          <Check
-                            className={cn(
-                              'mr-2 h-4 w-4',
-                              selectedTenantId === tenant.id
-                                ? 'opacity-100'
-                                : 'opacity-0'
+                          {field.value
+                            ? tenants.find(
+                                (tenant) => tenant.id === field.value
+                              )?.name
+                            : 'Selecione um tenant'}
+                          <ChevronsUpDown className='ml-2 h-4 w-4 shrink-0 opacity-50' />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className='w-full p-0'>
+                      <Command>
+                        <CommandInput placeholder='Buscar tenant...' />
+                        <CommandList>
+                          <CommandEmpty>Nenhum tenant encontrado</CommandEmpty>
+                          <CommandGroup>
+                            {isLoadingTenants ? (
+                              <div className='p-2'>
+                                <Skeleton className='h-8 w-full' />
+                              </div>
+                            ) : (
+                              tenants.map((tenant) => (
+                                <CommandItem
+                                  value={tenant.name}
+                                  key={tenant.id}
+                                  onSelect={() => handleTenantSelect(tenant.id)}
+                                >
+                                  <Check
+                                    className={cn(
+                                      'mr-2 h-4 w-4',
+                                      tenant.id === field.value
+                                        ? 'opacity-100'
+                                        : 'opacity-0'
+                                    )}
+                                  />
+                                  {tenant.name}
+                                </CommandItem>
+                              ))
                             )}
-                          />
-                          {tenant.name}
-                        </CommandItem>
-                      ))}
-                    </CommandGroup>
-                  </CommandList>
-                </Command>
-              </PopoverContent>
-            </Popover>
-          </FormField>
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-          <FormField label='Projeto' required>
-            <Popover open={projectOpen} onOpenChange={setProjectOpen}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant='outline'
-                  role='combobox'
-                  aria-expanded={projectOpen}
-                  className='w-full justify-between'
-                  disabled={isLoadingProjects || !selectedTenantId}
-                >
-                  {isLoadingProjects ? (
-                    <Skeleton className='h-4 w-[160px]' />
-                  ) : !selectedTenantId ? (
-                    'Selecione um Tenant primeiro'
-                  ) : currentProject ? (
-                    currentProject.name
-                  ) : (
-                    'Selecionar Projeto'
-                  )}
-                  <ChevronsUpDown className='ml-2 h-4 w-4 shrink-0 opacity-50' />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className='w-full p-0'>
-                <Command>
-                  <CommandInput placeholder='Buscar projeto...' />
-                  <CommandList>
-                    <CommandEmpty>Nenhum projeto encontrado.</CommandEmpty>
-                    <CommandGroup>
-                      {projects.map((project) => (
-                        <CommandItem
-                          key={project.id}
-                          value={project.id}
-                          onSelect={() => handleProjectSelect(project.id)}
+            <FormField
+              control={form.control}
+              name='projectId'
+              render={({ field }) => (
+                <FormItem className='flex flex-col'>
+                  <FormLabel>Projeto</FormLabel>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          variant='outline'
+                          role='combobox'
+                          className={cn(
+                            'w-full justify-between',
+                            !field.value && 'text-muted-foreground'
+                          )}
+                          disabled={!selectedTenantId}
                         >
-                          <Check
-                            className={cn(
-                              'mr-2 h-4 w-4',
-                              selectedProjectId === project.id
-                                ? 'opacity-100'
-                                : 'opacity-0'
+                          {field.value
+                            ? projects.find(
+                                (project) => project.id === field.value
+                              )?.name
+                            : 'Selecione um projeto'}
+                          <ChevronsUpDown className='ml-2 h-4 w-4 shrink-0 opacity-50' />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className='w-full p-0'>
+                      <Command>
+                        <CommandInput placeholder='Buscar projeto...' />
+                        <CommandList>
+                          <CommandEmpty>Nenhum projeto encontrado</CommandEmpty>
+                          <CommandGroup>
+                            {isLoadingProjects ? (
+                              <div className='p-2'>
+                                <Skeleton className='h-8 w-full' />
+                              </div>
+                            ) : (
+                              projects.map((project) => (
+                                <CommandItem
+                                  value={project.name}
+                                  key={project.id}
+                                  onSelect={() =>
+                                    handleProjectSelect(project.id)
+                                  }
+                                >
+                                  <Check
+                                    className={cn(
+                                      'mr-2 h-4 w-4',
+                                      project.id === field.value
+                                        ? 'opacity-100'
+                                        : 'opacity-0'
+                                    )}
+                                  />
+                                  {project.name}
+                                </CommandItem>
+                              ))
                             )}
-                          />
-                          {project.name}
-                        </CommandItem>
-                      ))}
-                    </CommandGroup>
-                  </CommandList>
-                </Command>
-              </PopoverContent>
-            </Popover>
-          </FormField>
-        </FormRow>
-      </FormSection>
-
-      <FormSection title='Informações Básicas'>
-        <FormRow>
-          <FormField label='Nome da Atividade' required>
-            <Input
-              value={formData.nomeActividade || ''}
-              onChange={(e) => handleChange('nomeActividade', e.target.value)}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </FormField>
+          </FormRow>
 
-          <FormField label='Tipo de Atividade' required>
-            <Select
-              value={formData.tipoActividade}
-              onValueChange={(value) => handleChange('tipoActividade', value)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder='Selecione' />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value='TURISTICA'>Turística</SelectItem>
-                <SelectItem value='INDUSTRIAL'>Industrial</SelectItem>
-                <SelectItem value='AGRO_PECUARIA'>Agro-Pecuária</SelectItem>
-                <SelectItem value='ENERGETICA'>Energética</SelectItem>
-                <SelectItem value='SERVICOS'>Serviços</SelectItem>
-                <SelectItem value='OUTRA'>Outra</SelectItem>
-              </SelectContent>
-            </Select>
-          </FormField>
-        </FormRow>
-
-        <FormField label='Proponentes'>
-          <Input
-            value={formData.proponentes || ''}
-            onChange={(e) => handleChange('proponentes', e.target.value)}
-          />
-        </FormField>
-      </FormSection>
-
-      <FormSection title='Informações de Contato'>
-        <FormRow>
-          <FormField label='Endereço' required>
-            <Input
-              value={formData.endereco || ''}
-              onChange={(e) => handleChange('endereco', e.target.value)}
+          <FormRow>
+            <CustomFormField
+              control={form.control}
+              name='nomeActividade'
+              label='Nome da Atividade'
+              placeholder='Digite o nome da atividade'
             />
-          </FormField>
 
-          <FormField label='Telefone'>
-            <Input
-              value={formData.telefone || ''}
-              onChange={(e) => handleChange('telefone', e.target.value)}
+            <CustomFormField
+              control={form.control}
+              name='tipoActividade'
+              label='Tipo de Atividade'
+              type='select'
+              options={[
+                { value: 'TURISTICA', label: 'Turística' },
+                { value: 'INDUSTRIAL', label: 'Industrial' },
+                { value: 'AGRO_PECUARIA', label: 'Agro-pecuária' },
+                { value: 'ENERGETICA', label: 'Energética' },
+                { value: 'SERVICOS', label: 'Serviços' },
+                { value: 'OUTRA', label: 'Outra' },
+              ]}
             />
-          </FormField>
-        </FormRow>
+          </FormRow>
 
-        <FormRow>
-          <FormField label='Fax'>
-            <Input
-              value={formData.fax || ''}
-              onChange={(e) => handleChange('fax', e.target.value)}
+          <FormRow>
+            <CustomFormField
+              control={form.control}
+              name='proponentes'
+              label='Proponentes'
+              placeholder='Digite os proponentes'
             />
-          </FormField>
 
-          <FormField label='Telemóvel'>
-            <Input
-              value={formData.telemovel || ''}
-              onChange={(e) => handleChange('telemovel', e.target.value)}
+            <CustomFormField
+              control={form.control}
+              name='endereco'
+              label='Endereço'
+              placeholder='Digite o endereço'
             />
-          </FormField>
-        </FormRow>
+          </FormRow>
 
-        <FormField label='Email' required>
-          <Input
-            type='email'
-            value={formData.email || ''}
-            onChange={(e) => handleChange('email', e.target.value)}
-          />
-        </FormField>
-      </FormSection>
-
-      <FormSection title='Localização'>
-        <FormRow>
-          <FormField label='Bairro' required>
-            <Input
-              value={formData.bairroActividade || ''}
-              onChange={(e) => handleChange('bairroActividade', e.target.value)}
+          <FormRow>
+            <CustomFormField
+              control={form.control}
+              name='telefone'
+              label='Telefone'
+              placeholder='Digite o telefone'
             />
-          </FormField>
 
-          <FormField label='Vila' required>
-            <Input
-              value={formData.vilaActividade || ''}
-              onChange={(e) => handleChange('vilaActividade', e.target.value)}
+            <CustomFormField
+              control={form.control}
+              name='fax'
+              label='Fax'
+              placeholder='Digite o fax'
             />
-          </FormField>
-        </FormRow>
+          </FormRow>
 
-        <FormRow>
-          <FormField label='Cidade' required>
-            <Input
-              value={formData.cidadeActividade || ''}
-              onChange={(e) => handleChange('cidadeActividade', e.target.value)}
+          <FormRow>
+            <CustomFormField
+              control={form.control}
+              name='telemovel'
+              label='Telemóvel'
+              placeholder='Digite o telemóvel'
             />
-          </FormField>
 
-          <FormField label='Localidade'>
-            <Input
-              value={formData.localidadeActividade || ''}
-              onChange={(e) =>
-                handleChange('localidadeActividade', e.target.value)
-              }
+            <CustomFormField
+              control={form.control}
+              name='email'
+              label='Email'
+              placeholder='Digite o email'
             />
-          </FormField>
-        </FormRow>
+          </FormRow>
+        </FormSection>
 
-        <FormRow>
-          <FormField label='Distrito'>
-            <Input
-              value={formData.distritoActividade || ''}
-              onChange={(e) =>
-                handleChange('distritoActividade', e.target.value)
-              }
+        <FormSection title='Localização'>
+          <FormRow>
+            <CustomFormField
+              control={form.control}
+              name='bairroActividade'
+              label='Bairro'
+              placeholder='Digite o bairro'
             />
-          </FormField>
 
-          <FormField label='Província' required>
-            <Select
-              value={formData.provinciaActividade}
-              onValueChange={(value) =>
-                handleChange('provinciaActividade', value)
-              }
-            >
-              <SelectTrigger>
-                <SelectValue placeholder='Selecione' />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value='MAPUTO'>Maputo</SelectItem>
-                <SelectItem value='MAPUTO_CIDADE'>Maputo Cidade</SelectItem>
-                <SelectItem value='GAZA'>Gaza</SelectItem>
-                <SelectItem value='INHAMBANE'>Inhambane</SelectItem>
-                <SelectItem value='SOFALA'>Sofala</SelectItem>
-                <SelectItem value='MANICA'>Manica</SelectItem>
-                <SelectItem value='TETE'>Tete</SelectItem>
-                <SelectItem value='ZAMBEZIA'>Zambézia</SelectItem>
-                <SelectItem value='NAMPULA'>Nampula</SelectItem>
-                <SelectItem value='CABO_DELGADO'>Cabo Delgado</SelectItem>
-                <SelectItem value='NIASSA'>Niassa</SelectItem>
-              </SelectContent>
-            </Select>
-          </FormField>
-        </FormRow>
+            <CustomFormField
+              control={form.control}
+              name='vilaActividade'
+              label='Vila'
+              placeholder='Digite a vila'
+            />
+          </FormRow>
 
-        <FormField label='Coordenadas Geográficas'>
-          <Input
-            value={formData.coordenadasGeograficas || ''}
-            onChange={(e) =>
-              handleChange('coordenadasGeograficas', e.target.value)
-            }
-          />
-        </FormField>
-      </FormSection>
+          <FormRow>
+            <CustomFormField
+              control={form.control}
+              name='cidadeActividade'
+              label='Cidade'
+              placeholder='Digite a cidade'
+            />
 
-      <FormSection title='Características do Projeto'>
-        <FormRow>
-          <FormField label='Meio de Inserção' required>
-            <Select
-              value={formData.meioInsercao}
-              onValueChange={(value) => handleChange('meioInsercao', value)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder='Selecione' />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value='RURAL'>Rural</SelectItem>
-                <SelectItem value='URBANO'>Urbano</SelectItem>
-                <SelectItem value='PERIURBANO'>Periurbano</SelectItem>
-              </SelectContent>
-            </Select>
-          </FormField>
+            <CustomFormField
+              control={form.control}
+              name='localidadeActividade'
+              label='Localidade'
+              placeholder='Digite a localidade'
+            />
+          </FormRow>
 
-          <FormField label='Enquadramento Orçamental' required>
-            <Select
-              value={formData.enquadramentoOrcamentoTerritorial}
-              onValueChange={(value) =>
-                handleChange('enquadramentoOrcamentoTerritorial', value)
-              }
-            >
-              <SelectTrigger>
-                <SelectValue placeholder='Selecione' />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value='ESPACO_HABITACIONAL'>
-                  Espaço Habitacional
-                </SelectItem>
-                <SelectItem value='INDUSTRIAL'>Industrial</SelectItem>
-                <SelectItem value='SERVICOS'>Serviços</SelectItem>
-                <SelectItem value='OUTRO'>Outro</SelectItem>
-              </SelectContent>
-            </Select>
-          </FormField>
-        </FormRow>
+          <FormRow>
+            <CustomFormField
+              control={form.control}
+              name='distritoActividade'
+              label='Distrito'
+              placeholder='Digite o distrito'
+            />
 
-        <FormField label='Descrição da Atividade'>
-          <Textarea
-            value={formData.descricaoActividade || ''}
-            onChange={(e) =>
-              handleChange('descricaoActividade', e.target.value)
-            }
-          />
-        </FormField>
+            <CustomFormField
+              control={form.control}
+              name='provinciaActividade'
+              label='Província'
+              type='select'
+              options={[
+                { value: 'MAPUTO', label: 'Maputo' },
+                { value: 'MAPUTO_CIDADE', label: 'Maputo Cidade' },
+                { value: 'GAZA', label: 'Gaza' },
+                { value: 'INHAMBANE', label: 'Inhambane' },
+                { value: 'SOFALA', label: 'Sofala' },
+                { value: 'MANICA', label: 'Manica' },
+                { value: 'TETE', label: 'Tete' },
+                { value: 'ZAMBEZIA', label: 'Zambézia' },
+                { value: 'NAMPULA', label: 'Nampula' },
+                { value: 'CABO_DELGADO', label: 'Cabo Delgado' },
+                { value: 'NIASSA', label: 'Niassa' },
+              ]}
+            />
+          </FormRow>
 
-        <FormField label='Atividades Associadas'>
-          <Textarea
-            value={formData.actividadesAssociadas || ''}
-            onChange={(e) =>
-              handleChange('actividadesAssociadas', e.target.value)
-            }
-          />
-        </FormField>
+          <FormRow>
+            <CustomFormField
+              control={form.control}
+              name='coordenadasGeograficas'
+              label='Coordenadas Geográficas'
+              placeholder='Digite as coordenadas geográficas'
+            />
 
-        <FormField label='Descrição da Tecnologia de Construção/Operação'>
-          <Textarea
-            value={formData.descricaoTecnologiaConstrucaoOperacao || ''}
-            onChange={(e) =>
-              handleChange(
-                'descricaoTecnologiaConstrucaoOperacao',
-                e.target.value
-              )
-            }
-          />
-        </FormField>
+            <CustomFormField
+              control={form.control}
+              name='meioInsercao'
+              label='Meio de Inserção'
+              type='select'
+              options={[
+                { value: 'RURAL', label: 'Rural' },
+                { value: 'URBANO', label: 'Urbano' },
+                { value: 'PERIURBANO', label: 'Periurbano' },
+              ]}
+            />
+          </FormRow>
 
-        <FormField label='Atividades Complementares Principais'>
-          <Textarea
-            value={formData.actividadesComplementaresPrincipais || ''}
-            onChange={(e) =>
-              handleChange(
-                'actividadesComplementaresPrincipais',
-                e.target.value
-              )
-            }
-          />
-        </FormField>
-      </FormSection>
+          <FormRow>
+            <CustomFormField
+              control={form.control}
+              name='enquadramentoOrcamentoTerritorial'
+              label='Enquadramento Orçamento Territorial'
+              type='select'
+              options={[
+                { value: 'ESPACO_HABITACIONAL', label: 'Espaço Habitacional' },
+                { value: 'INDUSTRIAL', label: 'Industrial' },
+                { value: 'SERVICOS', label: 'Serviços' },
+                { value: 'OUTRO', label: 'Outro' },
+              ]}
+            />
+          </FormRow>
+        </FormSection>
 
-      <FormSection title='Recursos e Infraestrutura'>
-        <FormField label='Tipo e Quantidade de Origem da Mão de Obra'>
-          <Textarea
-            value={formData.tipoQuantidadeOrigemMaoDeObra || ''}
-            onChange={(e) =>
-              handleChange('tipoQuantidadeOrigemMaoDeObra', e.target.value)
-            }
-          />
-        </FormField>
+        <FormSection title='Descrição da Atividade'>
+          <FormRow>
+            <CustomFormField
+              control={form.control}
+              name='descricaoActividade'
+              label='Descrição da Atividade'
+              type='textarea'
+              placeholder='Digite a descrição da atividade'
+            />
+          </FormRow>
 
-        <FormField label='Tipo e Quantidade de Origem/Proveniência de Matérias Primas'>
-          <Textarea
-            value={
-              formData.tipoQuantidadeOrigemProvenienciaMateriasPrimas || ''
-            }
-            onChange={(e) =>
-              handleChange(
-                'tipoQuantidadeOrigemProvenienciaMateriasPrimas',
-                e.target.value
-              )
-            }
-          />
-        </FormField>
+          <FormRow>
+            <CustomFormField
+              control={form.control}
+              name='actividadesAssociadas'
+              label='Atividades Associadas'
+              type='textarea'
+              placeholder='Digite as atividades associadas'
+            />
+          </FormRow>
 
-        <FormField label='Químicos Utilizados'>
-          <Textarea
-            value={formData.quimicosUtilizados || ''}
-            onChange={(e) => handleChange('quimicosUtilizados', e.target.value)}
-          />
-        </FormField>
+          <FormRow>
+            <CustomFormField
+              control={form.control}
+              name='descricaoTecnologiaConstrucaoOperacao'
+              label='Descrição da Tecnologia de Construção e Operação'
+              type='textarea'
+              placeholder='Digite a descrição da tecnologia'
+            />
+          </FormRow>
 
-        <FormField label='Tipo e Origem do Consumo de Água/Energia'>
-          <Textarea
-            value={formData.tipoOrigemConsumoAguaEnergia || ''}
-            onChange={(e) =>
-              handleChange('tipoOrigemConsumoAguaEnergia', e.target.value)
-            }
-          />
-        </FormField>
+          <FormRow>
+            <CustomFormField
+              control={form.control}
+              name='actividadesComplementaresPrincipais'
+              label='Atividades Complementares Principais'
+              type='textarea'
+              placeholder='Digite as atividades complementares'
+            />
+          </FormRow>
+        </FormSection>
 
-        <FormField label='Origem de Combustíveis/Lubrificantes'>
-          <Textarea
-            value={formData.origemCombustiveisLubrificantes || ''}
-            onChange={(e) =>
-              handleChange('origemCombustiveisLubrificantes', e.target.value)
-            }
-          />
-        </FormField>
+        <FormSection title='Recursos e Infraestrutura'>
+          <FormRow>
+            <CustomFormField
+              control={form.control}
+              name='tipoQuantidadeOrigemMaoDeObra'
+              label='Tipo e Quantidade de Mão de Obra'
+              type='textarea'
+              placeholder='Digite informações sobre a mão de obra'
+            />
+          </FormRow>
 
-        <FormField label='Outros Recursos Necessários'>
-          <Textarea
-            value={formData.outrosRecursosNecessarios || ''}
-            onChange={(e) =>
-              handleChange('outrosRecursosNecessarios', e.target.value)
-            }
-          />
-        </FormField>
-      </FormSection>
+          <FormRow>
+            <CustomFormField
+              control={form.control}
+              name='tipoQuantidadeOrigemProvenienciaMateriasPrimas'
+              label='Tipo e Quantidade de Matérias Primas'
+              type='textarea'
+              placeholder='Digite informações sobre as matérias primas'
+            />
+          </FormRow>
 
-      <FormSection title='Informações Ambientais'>
-        <FormField label='Posse de Terra'>
-          <Textarea
-            value={formData.posseDeTerra || ''}
-            onChange={(e) => handleChange('posseDeTerra', e.target.value)}
-          />
-        </FormField>
+          <FormRow>
+            <CustomFormField
+              control={form.control}
+              name='quimicosUtilizados'
+              label='Químicos Utilizados'
+              type='textarea'
+              placeholder='Digite os químicos utilizados'
+            />
+          </FormRow>
 
-        <FormField label='Alternativas de Localização da Atividade'>
-          <Textarea
-            value={formData.alternativasLocalizacaoActividade || ''}
-            onChange={(e) =>
-              handleChange('alternativasLocalizacaoActividade', e.target.value)
-            }
-          />
-        </FormField>
+          <FormRow>
+            <CustomFormField
+              control={form.control}
+              name='tipoOrigemConsumoAguaEnergia'
+              label='Origem do Consumo de Água e Energia'
+              type='textarea'
+              placeholder='Digite informações sobre o consumo de água e energia'
+            />
+          </FormRow>
 
-        <FormField label='Descrição Breve da Situação Ambiental de Referência Local/Regional'>
-          <Textarea
-            value={
-              formData.descricaoBreveSituacaoAmbientalReferenciaLocalRegional ||
-              ''
-            }
-            onChange={(e) =>
-              handleChange(
-                'descricaoBreveSituacaoAmbientalReferenciaLocalRegional',
-                e.target.value
-              )
-            }
-          />
-        </FormField>
+          <FormRow>
+            <CustomFormField
+              control={form.control}
+              name='origemCombustiveisLubrificantes'
+              label='Origem de Combustíveis e Lubrificantes'
+              type='textarea'
+              placeholder='Digite informações sobre combustíveis e lubrificantes'
+            />
+          </FormRow>
 
-        <FormRow>
-          <FormField label='Características Físicas do Local'>
-            <Select
-              value={formData.caracteristicasFisicasLocalActividade}
-              onValueChange={(value) =>
-                handleChange('caracteristicasFisicasLocalActividade', value)
-              }
-            >
-              <SelectTrigger>
-                <SelectValue placeholder='Selecione' />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value='PLANICIE'>Planície</SelectItem>
-                <SelectItem value='PLANALTO'>Planalto</SelectItem>
-                <SelectItem value='VALE'>Vale</SelectItem>
-                <SelectItem value='MONTANHA'>Montanha</SelectItem>
-              </SelectContent>
-            </Select>
-          </FormField>
+          <FormRow>
+            <CustomFormField
+              control={form.control}
+              name='outrosRecursosNecessarios'
+              label='Outros Recursos Necessários'
+              type='textarea'
+              placeholder='Digite outros recursos necessários'
+            />
+          </FormRow>
+        </FormSection>
 
-          <FormField label='Ecossistemas Predominantes'>
-            <Select
-              value={formData.ecosistemasPredominantes}
-              onValueChange={(value) =>
-                handleChange('ecosistemasPredominantes', value)
-              }
-            >
-              <SelectTrigger>
-                <SelectValue placeholder='Selecione' />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value='FLUVIAL'>Fluvial</SelectItem>
-                <SelectItem value='LACUSTRE'>Lacustre</SelectItem>
-                <SelectItem value='MARINHO'>Marinho</SelectItem>
-                <SelectItem value='TERRESTRE'>Terrestre</SelectItem>
-              </SelectContent>
-            </Select>
-          </FormField>
-        </FormRow>
+        <FormSection title='Características do Local'>
+          <FormRow>
+            <CustomFormField
+              control={form.control}
+              name='posseDeTerra'
+              label='Posse de Terra'
+              type='textarea'
+              placeholder='Digite informações sobre a posse de terra'
+            />
+          </FormRow>
 
-        <FormRow>
-          <FormField label='Zona de Localização'>
-            <Select
-              value={formData.zonaLocalizacao}
-              onValueChange={(value) => handleChange('zonaLocalizacao', value)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder='Selecione' />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value='COSTEIRA'>Costeira</SelectItem>
-                <SelectItem value='INTERIOR'>Interior</SelectItem>
-                <SelectItem value='ILHA'>Ilha</SelectItem>
-              </SelectContent>
-            </Select>
-          </FormField>
+          <FormRow>
+            <CustomFormField
+              control={form.control}
+              name='alternativasLocalizacaoActividade'
+              label='Alternativas de Localização'
+              type='textarea'
+              placeholder='Digite as alternativas de localização'
+            />
+          </FormRow>
 
-          <FormField label='Tipo de Vegetação Predominante'>
-            <Select
-              value={formData.tipoVegetacaoPredominante}
-              onValueChange={(value) =>
-                handleChange('tipoVegetacaoPredominante', value)
-              }
-            >
-              <SelectTrigger>
-                <SelectValue placeholder='Selecione' />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value='FLORESTA'>Floresta</SelectItem>
-                <SelectItem value='SAVANA'>Savana</SelectItem>
-                <SelectItem value='OUTRO'>Outro</SelectItem>
-              </SelectContent>
-            </Select>
-          </FormField>
-        </FormRow>
+          <FormRow>
+            <CustomFormField
+              control={form.control}
+              name='descricaoBreveSituacaoAmbientalReferenciaLocalRegional'
+              label='Situação Ambiental de Referência'
+              type='textarea'
+              placeholder='Digite a situação ambiental de referência'
+            />
+          </FormRow>
 
-        <FormField label='Uso do Solo'>
-          <Select
-            value={formData.usoSolo}
-            onValueChange={(value) => handleChange('usoSolo', value)}
+          <FormRow>
+            <CustomFormField
+              control={form.control}
+              name='caracteristicasFisicasLocalActividade'
+              label='Características Físicas do Local'
+              type='select'
+              options={[
+                { value: 'PLANICIE', label: 'Planície' },
+                { value: 'PLANALTO', label: 'Planalto' },
+                { value: 'VALE', label: 'Vale' },
+                { value: 'MONTANHA', label: 'Montanha' },
+              ]}
+            />
+
+            <CustomFormField
+              control={form.control}
+              name='ecosistemasPredominantes'
+              label='Ecossistemas Predominantes'
+              type='select'
+              options={[
+                { value: 'FLUVIAL', label: 'Fluvial' },
+                { value: 'LACUSTRE', label: 'Lacustre' },
+                { value: 'MARINHO', label: 'Marinho' },
+                { value: 'TERRESTRE', label: 'Terrestre' },
+              ]}
+            />
+          </FormRow>
+
+          <FormRow>
+            <CustomFormField
+              control={form.control}
+              name='zonaLocalizacao'
+              label='Zona de Localização'
+              type='select'
+              options={[
+                { value: 'COSTEIRA', label: 'Costeira' },
+                { value: 'INTERIOR', label: 'Interior' },
+                { value: 'ILHA', label: 'Ilha' },
+              ]}
+            />
+
+            <CustomFormField
+              control={form.control}
+              name='tipoVegetacaoPredominante'
+              label='Tipo de Vegetação Predominante'
+              type='select'
+              options={[
+                { value: 'FLORESTA', label: 'Floresta' },
+                { value: 'SAVANA', label: 'Savana' },
+                { value: 'OUTRO', label: 'Outro' },
+              ]}
+            />
+          </FormRow>
+
+          <FormRow>
+            <CustomFormField
+              control={form.control}
+              name='usoSolo'
+              label='Uso do Solo'
+              type='select'
+              options={[
+                { value: 'AGROPECUARIO', label: 'Agropecuário' },
+                { value: 'HABITACIONAL', label: 'Habitacional' },
+                { value: 'INDUSTRIAL', label: 'Industrial' },
+                { value: 'PROTECCAO', label: 'Proteção' },
+                { value: 'OUTRO', label: 'Outro' },
+              ]}
+            />
+          </FormRow>
+
+          <FormRow>
+            <CustomFormField
+              control={form.control}
+              name='infraestruturaExistenteAreaActividade'
+              label='Infraestrutura Existente'
+              type='textarea'
+              placeholder='Digite informações sobre a infraestrutura existente'
+            />
+          </FormRow>
+
+          <FormRow>
+            <CustomFormField
+              control={form.control}
+              name='informacaoComplementarAtravesMaps'
+              label='Informação Complementar via Maps'
+              type='textarea'
+              placeholder='Digite informações complementares via maps'
+            />
+          </FormRow>
+
+          <FormRow>
+            <CustomFormField
+              control={form.control}
+              name='valorTotalInvestimento'
+              label='Valor Total do Investimento'
+              type='number'
+              placeholder='Digite o valor total do investimento'
+            />
+          </FormRow>
+        </FormSection>
+
+        <div className='flex justify-end space-x-4'>
+          <Button
+            type='button'
+            variant='outline'
+            onClick={onCancel}
+            disabled={isLoading}
           >
-            <SelectTrigger>
-              <SelectValue placeholder='Selecione' />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value='AGROPECUARIO'>Agropecuário</SelectItem>
-              <SelectItem value='HABITACIONAL'>Habitacional</SelectItem>
-              <SelectItem value='INDUSTRIAL'>Industrial</SelectItem>
-              <SelectItem value='PROTECCAO'>Proteção</SelectItem>
-              <SelectItem value='OUTRO'>Outro</SelectItem>
-            </SelectContent>
-          </Select>
-        </FormField>
-
-        <FormField label='Infraestrutura Existente na Área da Atividade'>
-          <Textarea
-            value={formData.infraestruturaExistenteAreaActividade || ''}
-            onChange={(e) =>
-              handleChange(
-                'infraestruturaExistenteAreaActividade',
-                e.target.value
-              )
-            }
-          />
-        </FormField>
-
-        <FormField label='Informação Complementar Através de Maps'>
-          <Textarea
-            value={formData.informacaoComplementarAtravesMaps || ''}
-            onChange={(e) =>
-              handleChange('informacaoComplementarAtravesMaps', e.target.value)
-            }
-          />
-        </FormField>
-
-        <FormField label='Valor Total do Investimento'>
-          <Input
-            type='number'
-            step='0.01'
-            value={formData.valorTotalInvestimento}
-            onChange={(e) =>
-              handleChange('valorTotalInvestimento', parseFloat(e.target.value))
-            }
-          />
-        </FormField>
-      </FormSection>
-
-      {error && (
-        <div className='bg-red-50 p-4 rounded-md border border-red-200 text-red-800 mb-4'>
-          <p className='font-semibold'>Erro ao enviar o formulário:</p>
-          <p>{error}</p>
+            Cancelar
+          </Button>
+          <Button type='submit' disabled={isLoading}>
+            {isLoading ? 'Salvando...' : 'Salvar'}
+          </Button>
         </div>
-      )}
-
-      <FormActions
-        isSubmitting={isLoading}
-        onCancel={onCancel}
-        submitLabel={formData.id ? 'Atualizar' : 'Criar'}
-      />
-    </form>
+      </form>
+    </Form>
   );
 }

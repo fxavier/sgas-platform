@@ -1,3 +1,8 @@
+import { z } from 'zod';
+import { fichaInformacaoSchema } from '@/lib/validations/ficha-informacao';
+
+export type FichaInformacaoFormData = z.infer<typeof fichaInformacaoSchema>;
+
 export interface RelatorioIncidente {
   id?: string;
   dataIncidente: Date;
@@ -142,78 +147,9 @@ export interface TabelaAccao {
   dataConclusao: Date;
 }
 
-export interface FichaInformacaoAmbientalPreliminar {
+export interface FichaInformacaoAmbientalPreliminar
+  extends FichaInformacaoFormData {
   id: string;
-  tenantId: string;
-  projectId: string;
-  nomeActividade: string;
-  tipoActividade:
-    | 'TURISTICA'
-    | 'INDUSTRIAL'
-    | 'AGRO_PECUARIA'
-    | 'ENERGETICA'
-    | 'SERVICOS'
-    | 'OUTRA';
-  proponentes?: string;
-  endereco: string;
-  telefone?: string;
-  fax?: string;
-  telemovel?: string;
-  email: string;
-  bairroActividade: string;
-  vilaActividade: string;
-  cidadeActividade: string;
-  localidadeActividade?: string;
-  distritoActividade?: string;
-  provinciaActividade:
-    | 'MAPUTO'
-    | 'MAPUTO_CIDADE'
-    | 'GAZA'
-    | 'INHAMBANE'
-    | 'SOFALA'
-    | 'MANICA'
-    | 'TETE'
-    | 'ZAMBEZIA'
-    | 'NAMPULA'
-    | 'CABO_DELGADO'
-    | 'NIASSA';
-  coordenadasGeograficas?: string;
-  meioInsercao: 'RURAL' | 'URBANO' | 'PERIURBANO';
-  enquadramentoOrcamentoTerritorial:
-    | 'ESPACO_HABITACIONAL'
-    | 'INDUSTRIAL'
-    | 'SERVICOS'
-    | 'OUTRO';
-  descricaoActividade?: string;
-  actividadesAssociadas?: string;
-  descricaoTecnologiaConstrucaoOperacao?: string;
-  actividadesComplementaresPrincipais?: string;
-  tipoQuantidadeOrigemMaoDeObra?: string;
-  tipoQuantidadeOrigemProvenienciaMateriasPrimas?: string;
-  quimicosUtilizados?: string;
-  tipoOrigemConsumoAguaEnergia?: string;
-  origemCombustiveisLubrificantes?: string;
-  outrosRecursosNecessarios?: string;
-  posseDeTerra?: string;
-  alternativasLocalizacaoActividade?: string;
-  descricaoBreveSituacaoAmbientalReferenciaLocalRegional?: string;
-  caracteristicasFisicasLocalActividade?:
-    | 'PLANICIE'
-    | 'PLANALTO'
-    | 'VALE'
-    | 'MONTANHA';
-  ecosistemasPredominantes?: 'FLUVIAL' | 'LACUSTRE' | 'MARINHO' | 'TERRESTRE';
-  zonaLocalizacao?: 'COSTEIRA' | 'INTERIOR' | 'ILHA';
-  tipoVegetacaoPredominante?: 'FLORESTA' | 'SAVANA' | 'OUTRO';
-  usoSolo?:
-    | 'AGROPECUARIO'
-    | 'HABITACIONAL'
-    | 'INDUSTRIAL'
-    | 'PROTECCAO'
-    | 'OUTRO';
-  infraestruturaExistenteAreaActividade?: string;
-  informacaoComplementarAtravesMaps?: string;
-  valorTotalInvestimento?: number;
   createdAt: Date;
   updatedAt: Date;
 }

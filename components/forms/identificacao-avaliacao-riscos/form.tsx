@@ -51,6 +51,15 @@ import {
   type IdentificacaoAvaliacaoRiscosFormData,
 } from '@/lib/validations/identificacao-avaliacao-riscos';
 import { AddOptionDialog } from './add-option-dialog';
+import { ptBR } from 'date-fns/locale';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { useToast } from '@/hooks/use-toast';
 
 interface Tenant {
   id: string;
@@ -137,6 +146,7 @@ export function IdentificacaoAvaliacaoRiscosForm({
     []
   );
   const [isLoadingOptions, setIsLoadingOptions] = useState(true);
+  const [calendarOpen, setCalendarOpen] = useState(false);
 
   const form = useForm<IdentificacaoAvaliacaoRiscosFormData>({
     resolver: zodResolver(identificacaoAvaliacaoRiscosSchema),
@@ -279,8 +289,10 @@ export function IdentificacaoAvaliacaoRiscosForm({
       try {
         setIsLoadingOptions(true);
         const [riscosResponse, fatoresResponse] = await Promise.all([
-          fetch('/api/riscos-impactos'),
-          fetch('/api/fatores-ambientais'),
+          fetch(`/api/riscos-impactos?tenantId=${form.getValues('tenantId')}`),
+          fetch(
+            `/api/fatores-ambientais?tenantId=${form.getValues('tenantId')}`
+          ),
         ]);
 
         if (!riscosResponse.ok || !fatoresResponse.ok) {
@@ -301,8 +313,10 @@ export function IdentificacaoAvaliacaoRiscosForm({
       }
     };
 
-    fetchOptions();
-  }, []);
+    if (form.getValues('tenantId')) {
+      fetchOptions();
+    }
+  }, [form.getValues('tenantId')]);
 
   // Find the current tenant and project objects
   const currentTenant = tenants.find(
@@ -333,7 +347,7 @@ export function IdentificacaoAvaliacaoRiscosForm({
   };
 
   const handleAddNewOption = async (type: string, value: string) => {
-    if (!value) return;
+    if (!value || !selectedTenantId) return;
 
     try {
       let endpoint = '';
@@ -341,11 +355,11 @@ export function IdentificacaoAvaliacaoRiscosForm({
 
       switch (type) {
         case 'risco-impacto':
-          endpoint = '/api/riscos-impactos';
+          endpoint = `/api/riscos-impactos?tenantId=${selectedTenantId}`;
           data = { descricao: value };
           break;
         case 'fator-ambiental':
-          endpoint = '/api/fatores-ambientais';
+          endpoint = `/api/fatores-ambientais?tenantId=${selectedTenantId}`;
           data = { descricao: value };
           break;
         default:
@@ -390,7 +404,6 @@ export function IdentificacaoAvaliacaoRiscosForm({
 
       const dataToSubmit = {
         ...formData,
-        prazo: new Date(formData.prazo),
         tenantId: selectedTenantId,
         projectId: selectedProjectId,
       };
@@ -421,7 +434,7 @@ export function IdentificacaoAvaliacaoRiscosForm({
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-8'>
+      <form onSubmit={handleSubmit} className='space-y-8'>
         <FormSection title='Selecione o Tenant e Projeto'>
           <FormRow>
             <FormField label='Tenant' required>
@@ -806,7 +819,7 @@ export function IdentificacaoAvaliacaoRiscosForm({
           </FormField>
 
           <FormField label='Prazo' required>
-            <Popover>
+            <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
               <PopoverTrigger asChild>
                 <Button
                   variant={'outline'}
@@ -816,7 +829,7 @@ export function IdentificacaoAvaliacaoRiscosForm({
                   )}
                 >
                   {form.watch('prazo') ? (
-                    format(form.watch('prazo'), 'PPP')
+                    format(form.watch('prazo'), 'PPP', { locale: ptBR })
                   ) : (
                     <span>Selecione uma data</span>
                   )}
@@ -830,12 +843,14 @@ export function IdentificacaoAvaliacaoRiscosForm({
                   onSelect={(date) => {
                     if (date) {
                       form.setValue('prazo', date);
+                      setCalendarOpen(false);
                     }
                   }}
                   disabled={(date) =>
                     date < new Date() || date < new Date('1900-01-01')
                   }
                   initialFocus
+                  locale={ptBR}
                 />
               </PopoverContent>
             </Popover>

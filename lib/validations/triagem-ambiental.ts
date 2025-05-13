@@ -1,27 +1,31 @@
 import { z } from 'zod';
 
 export const triagemAmbientalSchema = z.object({
+  id: z.string().optional(),
+  tenantId: z.string().min(1, 'Tenant é obrigatório'),
+  projectId: z.string().min(1, 'Projeto é obrigatório'),
   responsavelPeloPreenchimentoId: z
     .string()
-    .uuid('ID do responsável pelo preenchimento inválido'),
+    .min(1, 'Responsável pelo preenchimento é obrigatório'),
   responsavelPelaVerificacaoId: z
     .string()
-    .uuid('ID do responsável pela verificação inválido'),
-  subprojectoId: z.string().uuid('ID do subprojeto inválido'),
+    .min(1, 'Responsável pela verificação é obrigatório'),
+  subprojectoId: z.string().min(1, 'Subprojeto é obrigatório'),
   consultaEngajamento: z.string().optional(),
   accoesRecomendadas: z.string().optional(),
-  resultadoTriagemId: z.string().uuid('ID do resultado da triagem inválido'),
-  tenantId: z.string().uuid('ID do tenant inválido'),
-  projectId: z.string().uuid('ID do projeto inválido'),
+  resultadoTriagemId: z.string().min(1, 'Resultado da triagem é obrigatório'),
   identificacaoRiscos: z
     .array(
       z.object({
-        identificacaoRiscosId: z
-          .string()
-          .uuid('ID da identificação de riscos inválido'),
+        biodiversidadeRecursosNaturaisId: z.string(),
+        resposta: z.enum(['SIM', 'NAO']),
+        comentario: z.string().optional(),
+        normaAmbientalSocial: z.string().optional(),
       })
     )
     .optional(),
 });
+
+export type TriagemAmbientalFormData = z.infer<typeof triagemAmbientalSchema>;
 
 export const triagemAmbientalUpdateSchema = triagemAmbientalSchema.partial();

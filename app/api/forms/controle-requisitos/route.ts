@@ -12,29 +12,28 @@ export async function GET(req: Request) {
     const tenantId = searchParams.get('tenantId');
     const projectId = searchParams.get('projectId');
 
-    if (!tenantId) {
+    if (!tenantId || !projectId) {
       return NextResponse.json(
-        { error: 'tenantId é obrigatório' },
+        { error: 'Tenant ID and Project ID are required' },
         { status: 400 }
       );
     }
 
-    const contextualPrisma = createContextualPrismaClient({
-      tenantId: tenantId || undefined,
-      projectId: projectId || undefined,
-    });
-
-    const registros = await contextualPrisma.controleRequisitosLegais.findMany({
+    const forms = await prisma.controleRequisitosLegais.findMany({
+      where: {
+        tenantId,
+        projectId,
+      },
       orderBy: {
-        updatedAt: 'desc',
+        createdAt: 'desc',
       },
     });
 
-    return NextResponse.json(registros);
+    return NextResponse.json(forms);
   } catch (error) {
-    console.error('Error fetching registros:', error);
+    console.error('Error fetching forms:', error);
     return NextResponse.json(
-      { error: 'Erro ao buscar registros' },
+      { error: 'Error fetching forms' },
       { status: 500 }
     );
   }
@@ -42,37 +41,28 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
-    const data = await req.json();
-    const validationResult = controleRequisitosSchema.safeParse(data);
+    const body = await req.json();
+    const validatedData = controleRequisitosSchema.parse(body);
 
-    if (!validationResult.success) {
-      return NextResponse.json(
-        {
-          error: 'Dados de entrada inválidos',
-          details: validationResult.error.format(),
-        },
-        { status: 400 }
-      );
-    }
-
-    const validatedData = validationResult.data;
-    const { tenantId, projectId, ...createData } = validatedData;
-
-    const newRegistro = await prisma.controleRequisitosLegais.create({
+    const form = await prisma.controleRequisitosLegais.create({
       data: {
-        ...createData,
-        tenant: { connect: { id: tenantId } },
-        project: { connect: { id: projectId } },
+        tenantId: validatedData.tenantId,
+        projectId: validatedData.projectId,
+        numnumero: validatedData.numnumero,
+        tituloDocumento: validatedData.tituloDocumento,
+        descricao: validatedData.descricao,
+        revocacoesAlteracoes: validatedData.revocacoesAlteracoes,
+        requisitoConformidade: validatedData.requisitoConformidade,
+        dataControle: validatedData.dataControle,
+        observation: validatedData.observation,
+        ficheiroDaLei: validatedData.ficheiroDaLei,
       },
     });
 
-    return NextResponse.json(newRegistro, { status: 201 });
+    return NextResponse.json(form);
   } catch (error) {
-    console.error('Error creating registro:', error);
-    return NextResponse.json(
-      { error: 'Erro ao criar registro' },
-      { status: 500 }
-    );
+    console.error('Error creating form:', error);
+    return NextResponse.json({ error: 'Error creating form' }, { status: 400 });
   }
 }
 

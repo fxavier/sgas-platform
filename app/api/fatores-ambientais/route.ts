@@ -1,52 +1,75 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/db';
+import { createContextualPrismaClient } from '@/lib/db-context';
 
-export async function POST(request: Request) {
+export async function GET(req: Request) {
   try {
-    const data = await request.json();
-    const { descricao, tenantId } = data;
+    const { searchParams } = new URL(req.url);
+    const tenantId = searchParams.get('tenantId');
 
-    if (!descricao || !tenantId) {
+    if (!tenantId) {
       return NextResponse.json(
-        { error: 'Descrição e tenantId são obrigatórios' },
+        { error: 'tenantId é obrigatório' },
         { status: 400 }
       );
     }
 
-    const fatorAmbiental = await prisma.factorAmbientalImpactado.create({
-      data: {
-        descricao,
-        tenant: {
-          connect: {
-            id: tenantId,
-          },
+    const contextualPrisma = createContextualPrismaClient({
+      tenantId: tenantId || undefined,
+    });
+
+    const fatoresAmbientais =
+      await contextualPrisma.factorAmbientalImpactado.findMany({
+        orderBy: {
+          descricao: 'asc',
         },
-      },
-    });
-
-    return NextResponse.json(fatorAmbiental, { status: 201 });
-  } catch (error) {
-    console.error('Error creating fator ambiental:', error);
-    return NextResponse.json(
-      { error: 'Erro ao criar fator ambiental' },
-      { status: 500 }
-    );
-  }
-}
-
-export async function GET() {
-  try {
-    const fatoresAmbientais = await prisma.factorAmbientalImpactado.findMany({
-      orderBy: {
-        descricao: 'asc',
-      },
-    });
+      });
 
     return NextResponse.json(fatoresAmbientais);
   } catch (error) {
     console.error('Error fetching fatores ambientais:', error);
     return NextResponse.json(
       { error: 'Erro ao buscar fatores ambientais' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function POST(req: Request) {
+  try {
+    const data = await req.json();
+    const { searchParams } = new URL(req.url);
+    const tenantId = searchParams.get('tenantId');
+
+    if (!tenantId) {
+      return NextResponse.json(
+        { error: 'tenantId é obrigatório' },
+        { status: 400 }
+      );
+    }
+
+    if (!data.descricao) {
+      return NextResponse.json(
+        { error: 'Descrição é obrigatória' },
+        { status: 400 }
+      );
+    }
+
+    const newFatorAmbiental = await prisma.factorAmbientalImpactado.create({
+      data: {
+        descricao: data.descricao,
+        tenantId,
+      },
+      include: {
+        tenant: true,
+      },
+    });
+
+    return NextResponse.json(newFatorAmbiental, { status: 201 });
+  } catch (error) {
+    console.error('Error creating fator ambiental:', error);
+    return NextResponse.json(
+      { error: 'Erro ao criar fator ambiental' },
       { status: 500 }
     );
   }

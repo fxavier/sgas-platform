@@ -869,3 +869,53 @@ model TriagemAmbientalSocialOnIdentificacaoRiscos {
   @@id([triagemAmbientalSocialId, identificacaoRiscosId])
   @@map("triagem_ambiental_social_identificacao_riscos")
 }
+
+/// Organizational Capacity and competency
+
+// Treinamentos model (Training)
+model Treinamentos {
+  id                 String              @id @default(uuid()) @db.Uuid
+  name               String              @db.VarChar(255)
+  matrizTreinamentos MatrizTreinamento[]
+}
+
+// CaixaFerramentas model (Toolbox)
+model CaixaFerramentas {
+  id                 String              @id @default(uuid()) @db.Uuid
+  name               String              @db.VarChar(255)
+  matrizTreinamentos MatrizTreinamento[]
+}
+
+// Funcao model (Function/Role)
+model Funcao {
+  id                 String              @id @default(uuid()) @db.Uuid
+  name               String              @db.VarChar(255)
+  matrizTreinamentos MatrizTreinamento[]
+}
+
+// Enum for Eficacia (Effectiveness)
+enum Eficacia {
+  Eficaz
+  Nao_Eficaz
+}
+
+// MatrizTreinamento model (Training Matrix)
+model MatrizTreinamento {
+  id                                         String           @id @default(uuid()) @db.Uuid
+  data                                       DateTime?        @db.Date
+  funcaoId                                   String           @db.Uuid
+  funcao                                     Funcao           @relation(fields: [funcaoId], references: [id], onDelete: Cascade)
+  treinamentoId                              String           @db.Uuid
+  treinamento                                Treinamentos     @relation(fields: [treinamentoId], references: [id], onDelete: Cascade)
+  caixaFerramentasId                         String           @db.Uuid
+  caixa_ferramentas                          CaixaFerramentas @relation(fields: [caixaFerramentasId], references: [id], onDelete: Cascade)
+  totais_palestras                           Int
+  total_horas                                Int
+  total_caixa_ferramentas                    Int
+  total_pessoas_informadas_caixa_ferramentas Int
+  eficacia                                   Eficacia
+  accoes_treinamento_nao_eficaz              String?
+  aprovado_por                               String           @db.VarChar(100)
+
+  @@map("FR_AS_005_Matriz_de_Treinamento")
+}

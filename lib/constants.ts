@@ -107,25 +107,25 @@ export const NAV_ITEMS = [
             submenu: [
               {
                 title: 'FR.AS.003 - Controle de requisitos legais',
-                href: '/esms-elements/risks-impacts/pr-as-003/fr-as-003',
+                href: '/esms-elements/identification-of-risks-impacts/pr-as-003/fr-as-003',
               },
             ],
           },
           {
             title: 'PR.AS.004 - Procedimento de gestão da conformidade legal',
-            href: '/esms-elements/risks-impacts/pr-as-004',
+            href: '/esms-elements/identification-of-risks-impacts/pr-as-004',
             submenu: [
               {
-                title: 'FR.AS.023 - Controle de requisitos legais',
-                href: '/esms-elements/risks-impacts/pr-as-004/fr-as-023',
+                title: 'FR.AS.023 - Triagem ambiental e social',
+                href: '/esms-elements/identification-of-risks-impacts/pr-as-004/fr-as-023',
               },
               {
                 title: 'MOD.AS.01 - Instrução do processo de AIA',
-                href: '/esms-elements/risks-impacts/pr-as-004/mod-as-01',
+                href: '/esms-elements/identification-of-risks-impacts/pr-as-004/mod-as-01',
               },
               {
                 title: 'MOD.AS.02 - Ficha de informação ambiental preliminar',
-                href: '/esms-elements/risks-impacts/pr-as-004/mod-as-02',
+                href: '/esms-elements/identification-of-risks-impacts/pr-as-004/mod-as-02',
               },
             ],
           },

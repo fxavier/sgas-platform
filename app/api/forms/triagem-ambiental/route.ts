@@ -1,10 +1,6 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/db';
-import { createContextualPrismaClient } from '@/lib/db-context';
-import {
-  triagemAmbientalSchema,
-  triagemAmbientalUpdateSchema,
-} from '@/lib/validations/triagem-ambiental';
+import { triagemAmbientalSchema } from '@/lib/validations/triagem-ambiental';
 
 export async function GET(req: Request) {
   try {
@@ -12,19 +8,17 @@ export async function GET(req: Request) {
     const tenantId = searchParams.get('tenantId');
     const projectId = searchParams.get('projectId');
 
-    if (!tenantId) {
-      return NextResponse.json(
-        { error: 'tenantId é obrigatório' },
-        { status: 400 }
-      );
+    if (!tenantId || !projectId) {
+      return new NextResponse('Tenant ID and Project ID are required', {
+        status: 400,
+      });
     }
 
-    const contextualPrisma = createContextualPrismaClient({
-      tenantId: tenantId || undefined,
-      projectId: projectId || undefined,
-    });
-
-    const registros = await contextualPrisma.triagemAmbientalSocial.findMany({
+    const forms = await prisma.triagemAmbientalSocial.findMany({
+      where: {
+        tenantId,
+        projectId,
+      },
       include: {
         responsavelPeloPreenchimento: true,
         responsavelPelaVerificacao: true,
@@ -32,68 +26,59 @@ export async function GET(req: Request) {
         resultadoTriagem: true,
         identificacaoRiscos: {
           include: {
-            identificacaoRiscos: true,
+            identificacaoRiscos: {
+              include: {
+                biodiversidadeRecursosNaturais: true,
+              },
+            },
           },
         },
       },
       orderBy: {
-        updatedAt: 'desc',
+        createdAt: 'desc',
       },
     });
 
-    return NextResponse.json(registros);
+    return NextResponse.json(forms);
   } catch (error) {
-    console.error('Error fetching registros:', error);
-    return NextResponse.json(
-      { error: 'Erro ao buscar registros' },
-      { status: 500 }
-    );
+    console.error('[TRIAGEM_AMBIENTAL_GET]', error);
+    return new NextResponse('Internal error', { status: 500 });
   }
 }
 
 export async function POST(req: Request) {
   try {
-    const data = await req.json();
-    const validationResult = triagemAmbientalSchema.safeParse(data);
+    const body = await req.json();
+    const validatedData = triagemAmbientalSchema.parse(body);
 
-    if (!validationResult.success) {
-      return NextResponse.json(
-        {
-          error: 'Dados de entrada inválidos',
-          details: validationResult.error.format(),
-        },
-        { status: 400 }
-      );
-    }
-
-    const validatedData = validationResult.data;
-    const { tenantId, projectId, identificacaoRiscos } = validatedData;
-
-    const newRegistro = await prisma.triagemAmbientalSocial.create({
+    const form = await prisma.triagemAmbientalSocial.create({
       data: {
-        responsavelPeloPreenchimento: {
-          connect: { id: validatedData.responsavelPeloPreenchimentoId },
-        },
-        responsavelPelaVerificacao: {
-          connect: { id: validatedData.responsavelPelaVerificacaoId },
-        },
-        subprojecto: {
-          connect: { id: validatedData.subprojectoId },
-        },
-        resultadoTriagem: {
-          connect: { id: validatedData.resultadoTriagemId },
-        },
+        tenantId: validatedData.tenantId,
+        projectId: validatedData.projectId,
+        responsavelPeloPreenchimentoId:
+          validatedData.responsavelPeloPreenchimentoId,
+        responsavelPelaVerificacaoId:
+          validatedData.responsavelPelaVerificacaoId,
+        subprojectoId: validatedData.subprojectoId,
         consultaEngajamento: validatedData.consultaEngajamento,
         accoesRecomendadas: validatedData.accoesRecomendadas,
-        tenant: { connect: { id: tenantId } },
-        project: { connect: { id: projectId } },
-        identificacaoRiscos: {
-          create: identificacaoRiscos?.map((risco) => ({
-            identificacaoRiscos: {
-              connect: { id: risco.identificacaoRiscosId },
-            },
-          })),
-        },
+        resultadoTriagemId: validatedData.resultadoTriagemId,
+        identificacaoRiscos: validatedData.identificacaoRiscos
+          ? {
+              create: validatedData.identificacaoRiscos.map((risco) => ({
+                identificacaoRiscos: {
+                  create: {
+                    biodiversidadeRecursosNaturaisId:
+                      risco.biodiversidadeRecursosNaturaisId,
+                    resposta: risco.resposta,
+                    comentario: risco.comentario,
+                    normaAmbientalSocial: risco.normaAmbientalSocial,
+                    tenantId: validatedData.tenantId,
+                  },
+                },
+              })),
+            }
+          : undefined,
       },
       include: {
         responsavelPeloPreenchimento: true,
@@ -102,109 +87,60 @@ export async function POST(req: Request) {
         resultadoTriagem: true,
         identificacaoRiscos: {
           include: {
-            identificacaoRiscos: true,
+            identificacaoRiscos: {
+              include: {
+                biodiversidadeRecursosNaturais: true,
+              },
+            },
           },
         },
       },
     });
 
-    return NextResponse.json(newRegistro, { status: 201 });
+    return NextResponse.json(form);
   } catch (error) {
-    console.error('Error creating registro:', error);
-    return NextResponse.json(
-      { error: 'Erro ao criar registro' },
-      { status: 500 }
-    );
+    console.error('[TRIAGEM_AMBIENTAL_POST]', error);
+    return new NextResponse('Internal error', { status: 500 });
   }
 }
 
-export async function PUT(req: Request) {
+export async function PATCH(req: Request) {
   try {
-    const { searchParams } = new URL(req.url);
-    const id = searchParams.get('id');
-    const tenantId = searchParams.get('tenantId');
+    const body = await req.json();
+    const { id, ...data } = body;
+    const validatedData = triagemAmbientalSchema.parse(data);
 
-    if (!id) {
-      return NextResponse.json({ error: 'ID é obrigatório' }, { status: 400 });
-    }
-
-    if (!tenantId) {
-      return NextResponse.json(
-        { error: 'tenantId é obrigatório' },
-        { status: 400 }
-      );
-    }
-
-    const data = await req.json();
-    const validationResult = triagemAmbientalUpdateSchema.safeParse(data);
-
-    if (!validationResult.success) {
-      return NextResponse.json(
-        {
-          error: 'Dados de entrada inválidos',
-          details: validationResult.error.format(),
-        },
-        { status: 400 }
-      );
-    }
-
-    const validatedData = validationResult.data;
-    const contextualPrisma = createContextualPrismaClient({
-      tenantId: tenantId || undefined,
-    });
-
-    const existingRegistro =
-      await contextualPrisma.triagemAmbientalSocial.findUnique({
-        where: { id },
-      });
-
-    if (!existingRegistro) {
-      return NextResponse.json(
-        { error: 'Registro não encontrado ou sem permissão' },
-        { status: 404 }
-      );
-    }
-
-    const updateData: any = { ...validatedData };
-    delete updateData.tenantId;
-    delete updateData.projectId;
-    delete updateData.identificacaoRiscos;
-
-    if (validatedData.tenantId) {
-      updateData.tenant = { connect: { id: validatedData.tenantId } };
-    }
-
-    if (validatedData.projectId) {
-      updateData.project = { connect: { id: validatedData.projectId } };
-    }
-
-    if (validatedData.responsavelPeloPreenchimentoId) {
-      updateData.responsavelPeloPreenchimento = {
-        connect: { id: validatedData.responsavelPeloPreenchimentoId },
-      };
-    }
-
-    if (validatedData.responsavelPelaVerificacaoId) {
-      updateData.responsavelPelaVerificacao = {
-        connect: { id: validatedData.responsavelPelaVerificacaoId },
-      };
-    }
-
-    if (validatedData.subprojectoId) {
-      updateData.subprojecto = {
-        connect: { id: validatedData.subprojectoId },
-      };
-    }
-
-    if (validatedData.resultadoTriagemId) {
-      updateData.resultadoTriagem = {
-        connect: { id: validatedData.resultadoTriagemId },
-      };
-    }
-
-    const updatedRegistro = await prisma.triagemAmbientalSocial.update({
+    const form = await prisma.triagemAmbientalSocial.update({
       where: { id },
-      data: updateData,
+      data: {
+        tenantId: validatedData.tenantId,
+        projectId: validatedData.projectId,
+        responsavelPeloPreenchimentoId:
+          validatedData.responsavelPeloPreenchimentoId,
+        responsavelPelaVerificacaoId:
+          validatedData.responsavelPelaVerificacaoId,
+        subprojectoId: validatedData.subprojectoId,
+        consultaEngajamento: validatedData.consultaEngajamento,
+        accoesRecomendadas: validatedData.accoesRecomendadas,
+        resultadoTriagemId: validatedData.resultadoTriagemId,
+        identificacaoRiscos: validatedData.identificacaoRiscos
+          ? {
+              deleteMany: {},
+              create: validatedData.identificacaoRiscos.map((risco) => ({
+                identificacaoRiscos: {
+                  create: {
+                    biodiversidadeRecursosNaturaisId:
+                      risco.biodiversidadeRecursosNaturaisId,
+                    resposta: risco.resposta,
+                    comentario: risco.comentario,
+                    normaAmbientalSocial: risco.normaAmbientalSocial,
+                    tenantId: validatedData.tenantId,
+                  },
+                },
+              })),
+            }
+          : undefined,
+      },
       include: {
         responsavelPeloPreenchimento: true,
         responsavelPelaVerificacao: true,
@@ -212,53 +148,20 @@ export async function PUT(req: Request) {
         resultadoTriagem: true,
         identificacaoRiscos: {
           include: {
-            identificacaoRiscos: true,
+            identificacaoRiscos: {
+              include: {
+                biodiversidadeRecursosNaturais: true,
+              },
+            },
           },
         },
       },
     });
 
-    // Update identificacaoRiscos if provided
-    if (validatedData.identificacaoRiscos) {
-      // First, delete all existing connections
-      await prisma.triagemAmbientalSocialOnIdentificacaoRiscos.deleteMany({
-        where: { triagemAmbientalSocialId: id },
-      });
-
-      // Then create new connections
-      await prisma.triagemAmbientalSocialOnIdentificacaoRiscos.createMany({
-        data: validatedData.identificacaoRiscos.map((risco) => ({
-          triagemAmbientalSocialId: id,
-          identificacaoRiscosId: risco.identificacaoRiscosId,
-        })),
-      });
-
-      // Fetch the updated record with the new connections
-      const finalRegistro = await prisma.triagemAmbientalSocial.findUnique({
-        where: { id },
-        include: {
-          responsavelPeloPreenchimento: true,
-          responsavelPelaVerificacao: true,
-          subprojecto: true,
-          resultadoTriagem: true,
-          identificacaoRiscos: {
-            include: {
-              identificacaoRiscos: true,
-            },
-          },
-        },
-      });
-
-      return NextResponse.json(finalRegistro);
-    }
-
-    return NextResponse.json(updatedRegistro);
+    return NextResponse.json(form);
   } catch (error) {
-    console.error('Error updating registro:', error);
-    return NextResponse.json(
-      { error: 'Erro ao atualizar registro' },
-      { status: 500 }
-    );
+    console.error('[TRIAGEM_AMBIENTAL_PATCH]', error);
+    return new NextResponse('Internal error', { status: 500 });
   }
 }
 
@@ -266,45 +169,18 @@ export async function DELETE(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
     const id = searchParams.get('id');
-    const tenantId = searchParams.get('tenantId');
 
     if (!id) {
-      return NextResponse.json({ error: 'ID é obrigatório' }, { status: 400 });
-    }
-
-    if (!tenantId) {
-      return NextResponse.json(
-        { error: 'tenantId é obrigatório' },
-        { status: 400 }
-      );
-    }
-
-    const contextualPrisma = createContextualPrismaClient({
-      tenantId: tenantId || undefined,
-    });
-
-    const existingRegistro =
-      await contextualPrisma.triagemAmbientalSocial.findUnique({
-        where: { id },
-      });
-
-    if (!existingRegistro) {
-      return NextResponse.json(
-        { error: 'Registro não encontrado ou sem permissão' },
-        { status: 404 }
-      );
+      return new NextResponse('ID is required', { status: 400 });
     }
 
     await prisma.triagemAmbientalSocial.delete({
       where: { id },
     });
 
-    return NextResponse.json({ success: true });
+    return new NextResponse(null, { status: 204 });
   } catch (error) {
-    console.error('Error deleting registro:', error);
-    return NextResponse.json(
-      { error: 'Erro ao excluir registro' },
-      { status: 500 }
-    );
+    console.error('[TRIAGEM_AMBIENTAL_DELETE]', error);
+    return new NextResponse('Internal error', { status: 500 });
   }
 }
