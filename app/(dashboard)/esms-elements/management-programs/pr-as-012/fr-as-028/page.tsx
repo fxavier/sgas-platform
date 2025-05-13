@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/card';
 import { RelatorioInicialIncidenteForm } from '@/components/forms/relatorio-inicial-incidente/form';
 import { DataTable } from '@/components/ui/data-table';
-import { columns } from '@/components/forms/relatorio-inicial-incidente/columns';
+import { createColumns } from '@/components/forms/relatorio-inicial-incidente/columns';
 import { useRouter } from 'next/navigation';
 import { RelatorioInicialIncidente } from '@/lib/types/forms';
 import { Button } from '@/components/ui/button';
@@ -18,13 +18,23 @@ import { Plus } from 'lucide-react';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { Info } from 'lucide-react';
 import { useTenantProjectContext } from '@/lib/context/tenant-project-context';
+import { useFormApi } from '@/lib/hooks/use-form-api';
+import { useToast } from '@/hooks/use-toast';
 
 export default function RelatorioInicialIncidentePage() {
   const router = useRouter();
   const [showForm, setShowForm] = useState(false);
   const [data, setData] = useState<RelatorioInicialIncidente[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<
+    RelatorioInicialIncidente | undefined
+  >(undefined);
   const { currentTenantId, currentProjectId } = useTenantProjectContext();
+  const { toast } = useToast();
+  const { remove } = useFormApi<RelatorioInicialIncidente>({
+    endpoint: 'relatorio-inicial-incidente',
+  });
 
   // Fetch data on component mount and when tenant/project changes
   const fetchData = async () => {
@@ -62,9 +72,47 @@ export default function RelatorioInicialIncidentePage() {
   const handleSuccess = (newData: RelatorioInicialIncidente) => {
     setData((prev) => [newData, ...prev]);
     setShowForm(false);
+    setSelectedItem(undefined);
     // Refresh data to ensure we have the latest records
     fetchData();
   };
+
+  // Handle edit
+  const handleEdit = (item: RelatorioInicialIncidente) => {
+    setSelectedItem(item);
+    setShowForm(true);
+  };
+
+  // Handle delete
+  const handleDelete = async (id: string) => {
+    if (window.confirm('Tem certeza que deseja excluir este registro?')) {
+      try {
+        setIsSubmitting(true);
+        await remove(id);
+        setData((prev) => prev.filter((item) => item.id !== id));
+        toast({
+          title: 'Sucesso',
+          description: 'Registro excluído com sucesso!',
+          variant: 'default',
+        });
+      } catch (error) {
+        console.error('Error deleting item:', error);
+        toast({
+          title: 'Erro',
+          description: 'Ocorreu um erro ao excluir o registro.',
+          variant: 'destructive',
+        });
+      } finally {
+        setIsSubmitting(false);
+      }
+    }
+  };
+
+  // Create columns with actions
+  const columns = createColumns({
+    onEdit: handleEdit,
+    onDelete: handleDelete,
+  });
 
   return (
     <div className='space-y-4'>
@@ -77,7 +125,13 @@ export default function RelatorioInicialIncidentePage() {
                 Formulário para registro inicial de incidentes
               </CardDescription>
             </div>
-            <Button onClick={() => setShowForm(!showForm)}>
+            <Button
+              onClick={() => {
+                setSelectedItem(undefined);
+                setShowForm(!showForm);
+              }}
+              disabled={isSubmitting}
+            >
               <Plus className='h-4 w-4 mr-2' />
               {showForm ? 'Cancelar' : 'Novo Registro'}
             </Button>
@@ -105,15 +159,20 @@ export default function RelatorioInicialIncidentePage() {
               tenantId={currentTenantId || undefined}
               projectId={currentProjectId || undefined}
               onSuccess={handleSuccess}
-              onCancel={() => setShowForm(false)}
-              initialData={{
-                tipoIncidente: 'INCIDENTE_QUASE_ACIDENTE',
-                dataIncidente: new Date(),
-                horaIncidente: new Date(),
-                dataComunicacao: new Date(),
-                dataCriacao: new Date(),
-                data: new Date(),
+              onCancel={() => {
+                setShowForm(false);
+                setSelectedItem(undefined);
               }}
+              initialData={
+                selectedItem || {
+                  tipoIncidente: 'INCIDENTE_QUASE_ACIDENTE',
+                  dataIncidente: new Date(),
+                  horaIncidente: new Date(),
+                  dataComunicacao: new Date(),
+                  dataCriacao: new Date(),
+                  data: new Date(),
+                }
+              }
             />
           ) : (
             !isLoading && (

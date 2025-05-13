@@ -20,6 +20,16 @@ const prismaClientSingleton = () => {
       'transaction',
       'user',
       'project',
+      'incidente',
+      'pessoasEnvolvidasNaInvestigacao',
+      'accoesCorrectivasPermanentesTomar',
+      'fotografiasIncidente',
+      'membrosEquipa',
+      'tabelaAccoes',
+      'matrizTreinamento',
+      'areaTreinamento',
+      'funcao',
+      'caixaFerramentas',
     ];
 
     // Check if we're doing a find operation on a multi-tenant model
@@ -48,7 +58,10 @@ const prismaClientSingleton = () => {
               if (
                 projectId &&
                 (params.model as string) !== 'user' &&
-                (params.model as string) !== 'transaction'
+                (params.model as string) !== 'transaction' &&
+                (params.model as string) !== 'areaTreinamento' &&
+                (params.model as string) !== 'funcao' &&
+                (params.model as string) !== 'caixaFerramentas'
               ) {
                 params.args.where.projectId = projectId;
               }
@@ -69,7 +82,10 @@ const prismaClientSingleton = () => {
               if (
                 projectId &&
                 (params.model as string) !== 'user' &&
-                (params.model as string) !== 'transaction'
+                (params.model as string) !== 'transaction' &&
+                (params.model as string) !== 'areaTreinamento' &&
+                (params.model as string) !== 'funcao' &&
+                (params.model as string) !== 'caixaFerramentas'
               ) {
                 params.args.where.projectId = projectId;
               }

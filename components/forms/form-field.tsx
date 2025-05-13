@@ -11,6 +11,30 @@ import {
 import { cn } from '@/lib/utils';
 import { Control, Controller } from 'react-hook-form';
 
+interface FormFieldProps {
+  label: string;
+  required?: boolean;
+  children: React.ReactNode;
+  className?: string;
+}
+
+export function FormField({
+  label,
+  required,
+  children,
+  className,
+}: FormFieldProps) {
+  return (
+    <div className={cn('space-y-2', className)}>
+      <Label>
+        {label}
+        {required && <span className='text-red-500 ml-1'>*</span>}
+      </Label>
+      {children}
+    </div>
+  );
+}
+
 interface CustomFormFieldProps {
   control: Control<any>;
   name: string;

@@ -8,7 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { IdentificacaoAvaliacaoRiscosForm } from '@/components/forms/identificacao-avaliacao-riscos/form';
+import { IdentificacaoAvaliacaoRiscosForm } from '@/components/forms/identificacao-avaliacao-riscos';
 import { identificacaoAvaliacaoRiscosSchema as formSchema } from '@/lib/validations/identificacao-avaliacao-riscos';
 import { DataTable } from '@/components/ui/data-table';
 import { createColumns } from '@/components/forms/identificacao-avaliacao-riscos/columns';

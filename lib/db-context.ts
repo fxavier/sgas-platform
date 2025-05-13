@@ -40,6 +40,10 @@ export function createContextualPrismaClient(options: DbContextOptions) {
           'fotografiasIncidente',
           'membrosEquipa',
           'tabelaAccoes',
+          'matrizTreinamento',
+          'areaTreinamento',
+          'funcao',
+          'caixaFerramentas',
         ].includes(prop)
       ) {
         return (target as any)[prop];
@@ -63,6 +67,9 @@ export function createContextualPrismaClient(options: DbContextOptions) {
               'findUnique',
               'count',
               'aggregate',
+              'create',
+              'update',
+              'delete',
             ].includes(modelProp)
           ) {
             return originalMethod;
@@ -80,10 +87,19 @@ export function createContextualPrismaClient(options: DbContextOptions) {
 
             // Add tenantId filter for all models except tenant
             if (prop !== 'tenant') {
-              newArgs.where = {
-                ...newArgs.where,
-                tenantId,
-              };
+              if (['create', 'update'].includes(modelProp as string)) {
+                // For create/update operations, add to data
+                newArgs.data = {
+                  ...newArgs.data,
+                  tenantId,
+                };
+              } else {
+                // For query operations, add to where
+                newArgs.where = {
+                  ...newArgs.where,
+                  tenantId,
+                };
+              }
             }
 
             // Add projectId filter for models that support it
@@ -92,12 +108,24 @@ export function createContextualPrismaClient(options: DbContextOptions) {
               prop !== 'tenant' &&
               prop !== 'project' &&
               prop !== 'user' &&
-              prop !== 'transaction'
+              prop !== 'transaction' &&
+              prop !== 'areaTreinamento' &&
+              prop !== 'funcao' &&
+              prop !== 'caixaFerramentas'
             ) {
-              newArgs.where = {
-                ...newArgs.where,
-                projectId,
-              };
+              if (['create', 'update'].includes(modelProp as string)) {
+                // For create/update operations, add to data
+                newArgs.data = {
+                  ...newArgs.data,
+                  projectId,
+                };
+              } else {
+                // For query operations, add to where
+                newArgs.where = {
+                  ...newArgs.where,
+                  projectId,
+                };
+              }
             }
 
             // Call the original method with the modified arguments

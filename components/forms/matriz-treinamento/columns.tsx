@@ -1,77 +1,76 @@
 import { ColumnDef } from '@tanstack/react-table';
-import { RelatorioInicialIncidente } from '@/lib/types/forms';
+import { MatrizTreinamento } from '@/lib/types/forms';
 import { formatDate } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { ArrowUpDown, Edit, Trash, MoreVertical } from 'lucide-react';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { ArrowUpDown, Edit, Trash } from 'lucide-react';
 
 interface ColumnsProps {
-  onEdit?: (data: RelatorioInicialIncidente) => void;
+  onEdit?: (data: MatrizTreinamento) => void;
   onDelete?: (id: string) => void;
 }
 
 export const createColumns = ({
   onEdit,
   onDelete,
-}: ColumnsProps = {}): ColumnDef<RelatorioInicialIncidente>[] => [
+}: ColumnsProps = {}): ColumnDef<MatrizTreinamento>[] => [
   {
-    accessorKey: 'dataIncidente',
+    accessorKey: 'data',
     header: ({ column }) => {
       return (
         <Button
           variant='ghost'
           onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
         >
-          Data do Incidente
+          Data
           <ArrowUpDown className='ml-2 h-4 w-4' />
         </Button>
       );
     },
-    cell: ({ row }) => formatDate(row.getValue('dataIncidente')),
+    cell: ({ row }) => formatDate(row.getValue('data')),
   },
   {
-    accessorKey: 'localIncidente',
-    header: 'Local do Incidente',
-  },
-  {
-    accessorKey: 'descricaoCircunstanciaIncidente',
-    header: 'Descrição',
+    accessorKey: 'funcao.name',
+    header: 'Função',
     cell: ({ row }) => {
-      const descricao = row.getValue(
-        'descricaoCircunstanciaIncidente'
-      ) as string;
-      return descricao.length > 50
-        ? `${descricao.substring(0, 50)}...`
-        : descricao;
+      const funcao = row.original.funcao;
+      return funcao?.name || '';
     },
   },
   {
-    accessorKey: 'supervisor',
-    header: 'Supervisor',
+    accessorKey: 'areaTreinamento.name',
+    header: 'Área de Treinamento',
+    cell: ({ row }) => {
+      const areaTreinamento = row.original.areaTreinamento;
+      return areaTreinamento?.name || '';
+    },
   },
   {
-    accessorKey: 'necessitaDeInvestigacaoAprofundada',
-    header: 'Necessita Investigação',
-    cell: ({ row }) =>
-      row.getValue('necessitaDeInvestigacaoAprofundada') === 'SIM'
-        ? 'Sim'
-        : 'Não',
+    accessorKey: 'caixaFerramentas.name',
+    header: 'Caixa de Ferramentas',
+    cell: ({ row }) => {
+      const caixaFerramentas = row.original.caixaFerramentas;
+      return caixaFerramentas?.name || '';
+    },
   },
   {
-    accessorKey: 'incidenteReportavel',
-    header: 'Incidente Reportável',
-    cell: ({ row }) =>
-      row.getValue('incidenteReportavel') === 'SIM' ? 'Sim' : 'Não',
+    accessorKey: 'totais_palestras',
+    header: 'Total Palestras',
   },
   {
-    accessorKey: 'dataComunicacao',
-    header: 'Data da Comunicação',
-    cell: ({ row }) => formatDate(row.getValue('dataComunicacao')),
+    accessorKey: 'total_horas',
+    header: 'Total Horas',
+  },
+  {
+    accessorKey: 'eficacia',
+    header: 'Eficácia',
+    cell: ({ row }) => {
+      const eficacia = row.getValue('eficacia') as string;
+      return eficacia === 'Eficaz' ? 'Eficaz' : 'Não Eficaz';
+    },
+  },
+  {
+    accessorKey: 'aprovado_por',
+    header: 'Aprovado Por',
   },
   {
     id: 'actions',

@@ -15,31 +15,35 @@ model Tenant {
   createdAt                     DateTime                                                  @default(now())
   updatedAt                     DateTime                                                  @updatedAt
   accoesCorrectivasPermanentes  AccoesCorrectivasPermanentesTomar[]
+  areasTreinamento              AreaTreinamento[]
+  biodiversidadeRecursos        BiodeversidadeRecursosNaturais[]
+  caixaFerramentas              CaixaFerramentas[]
+  consultationEngagement        ConsultationAndEngagement[]
+  controleRequisitosLegais      ControleRequisitosLegais[]
+  factorAmbientalImpactado      FactorAmbientalImpactado[]
+  fichaInformacaoAmbiental      FichaInformacaoAmbientalPreliminar[]
   fotografiasIncidente          FotografiasIncidente[]
+  funcao                        Funcao[]
+  identificacaoAvaliacaoRiscos  IdentificacaoAvaliacaoDeRiscosImapctosAmbientaisSociais[]
+  identificacaoRiscosSubprojeto IdentificacaoRiscosImpactosAmbientaisESociaisSubproject[]
   incidentes                    Incidente[]
+  matrizTreinamento             MatrizTreinamento[]
   membrosEquipa                 MembrosEquipa[]
   objetivosMetasAmbientais      RegistoObjectivosMetasAmbientaisSociais[]
+  pessoaDoContacto              PessoaDoContacto[]
   pessoasEnvolvidasInvestigacao PessoasEnvolvidasNaInvestigacao[]
   projects                      Project[]
   relatoriosIncidente           RelatorioIncidente[]
   relatoriosIniciaisIncidente   RelatorioInicialIncidente[]
+  responsavelVerificacao        ResponsavelPelaVerificacao[]
+  responsavelPreenchimento      ResponsavelPeloPreenchimento[]
+  resultadoTriagem              ResultadoTriagem[]
+  riscosImpactos                RiscosImpactos[]
+  subprojecto                   Subprojecto[]
   tabelaAccoes                  TabelaAccoes[]
   transactions                  Transaction[]
-  users                         User[]
-  factorAmbientalImpactado      FactorAmbientalImpactado[]
-  riscosImpactos                RiscosImpactos[]
-  identificacaoAvaliacaoRiscos  IdentificacaoAvaliacaoDeRiscosImapctosAmbientaisSociais[]
-  controleRequisitosLegais      ControleRequisitosLegais[]
-  pessoaDoContacto              PessoaDoContacto[]
-  responsavelPreenchimento      ResponsavelPeloPreenchimento[]
-  responsavelVerificacao        ResponsavelPelaVerificacao[]
-  biodiversidadeRecursos        BiodeversidadeRecursosNaturais[]
-  subprojecto                   Subprojecto[]
-  identificacaoRiscosSubprojeto IdentificacaoRiscosImpactosAmbientaisESociaisSubproject[]
   triagemAmbientalSocial        TriagemAmbientalSocial[]
-  consultationEngagement        ConsultationAndEngagement[]
-  resultadoTriagem              ResultadoTriagem[]
-  fichaInformacaoAmbiental      FichaInformacaoAmbientalPreliminar[]
+  users                         User[]
 
   @@map("tenants")
 }
@@ -51,17 +55,18 @@ model Project {
   createdAt                    DateTime                                                  @default(now())
   updatedAt                    DateTime                                                  @updatedAt
   tenantId                     String
+  consultationEngagement       ConsultationAndEngagement[]
+  controleRequisitosLegais     ControleRequisitosLegais[]
+  fichaInformacaoAmbiental     FichaInformacaoAmbientalPreliminar[]
+  identificacaoAvaliacaoRiscos IdentificacaoAvaliacaoDeRiscosImapctosAmbientaisSociais[]
+  matrizTreinamento            MatrizTreinamento[]
   objetivosMetasAmbientais     RegistoObjectivosMetasAmbientaisSociais[]
   tenant                       Tenant                                                    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   relatoriosIncidente          RelatorioIncidente[]
   relatoriosIniciaisIncidente  RelatorioInicialIncidente[]
-  transactions                 Transaction[]
-  identificacaoAvaliacaoRiscos IdentificacaoAvaliacaoDeRiscosImapctosAmbientaisSociais[]
-  controleRequisitosLegais     ControleRequisitosLegais[]
-  triagemAmbientalSocial       TriagemAmbientalSocial[]
-  consultationEngagement       ConsultationAndEngagement[]
   resultadoTriagem             ResultadoTriagem[]
-  fichaInformacaoAmbiental     FichaInformacaoAmbientalPreliminar[]
+  transactions                 Transaction[]
+  triagemAmbientalSocial       TriagemAmbientalSocial[]
 
   @@unique([name, tenantId])
   @@index([tenantId])
@@ -383,6 +388,371 @@ model RelatorioInicialIncidenteOnIncidentes {
   @@map("relatorio_inicial_incidente_incidentes")
 }
 
+model FactorAmbientalImpactado {
+  id                           String                                                    @id @default(uuid())
+  descricao                    String
+  createdAt                    DateTime                                                  @default(now())
+  updatedAt                    DateTime                                                  @updatedAt
+  tenantId                     String
+  tenant                       Tenant                                                    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  identificacaoAvaliacaoRiscos IdentificacaoAvaliacaoDeRiscosImapctosAmbientaisSociais[]
+
+  @@index([tenantId])
+  @@map("factor_ambiental_impactado")
+}
+
+model RiscosImpactos {
+  id                           String                                                    @id @default(uuid())
+  descricao                    String
+  createdAt                    DateTime                                                  @default(now())
+  updatedAt                    DateTime                                                  @updatedAt
+  tenantId                     String
+  identificacaoAvaliacaoRiscos IdentificacaoAvaliacaoDeRiscosImapctosAmbientaisSociais[]
+  tenant                       Tenant                                                    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@map("riscos_impactos")
+}
+
+model IdentificacaoAvaliacaoDeRiscosImapctosAmbientaisSociais {
+  id                             String                   @id @default(uuid())
+  numeroReferencia               String?
+  processo                       String?
+  actiactividade                 String
+  riscosImpactosId               String
+  realOuPotencial                String?
+  condicao                       Condicao
+  factorAmbientalImpactadoId     String
+  faseProjecto                   FaseProjecto
+  estatuto                       Estatuto
+  extensao                       Extensao
+  duduacao                       Duracao
+  intensidade                    Intensidade
+  probabilidade                  Probabilidade
+  significancia                  String?
+  duracaoRisco                   String?
+  descricaoMedidas               String
+  respresponsavelonsible         String?
+  prazo                          DateTime
+  referenciaDocumentoControl     String?
+  legislacaoMocambicanaAplicavel String?
+  observacoes                    String
+  createdAt                      DateTime                 @default(now())
+  updatedAt                      DateTime                 @updatedAt
+  tenantId                       String
+  projectId                      String
+  factorAmbientalImpactado       FactorAmbientalImpactado @relation(fields: [factorAmbientalImpactadoId], references: [id], onDelete: Cascade)
+  project                        Project                  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  riscosImpactos                 RiscosImpactos           @relation(fields: [riscosImpactosId], references: [id], onDelete: Cascade)
+  tenant                         Tenant                   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, projectId, riscosImpactosId, factorAmbientalImpactadoId])
+  @@map("identificacao_avaliacao_riscos_impactos")
+}
+
+model ControleRequisitosLegais {
+  id                    String   @id @default(uuid())
+  numnumero             String
+  tituloDocumento       String
+  descricao             DateTime
+  revocacoesAlteracoes  String?
+  requisitoConformidade String?
+  dataControle          DateTime
+  observation           String?
+  ficheiroDaLei         String?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  tenantId              String
+  projectId             String
+  project               Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  tenant                Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, projectId])
+  @@map("controle_requisitos_legais")
+}
+
+model PessoaDoContacto {
+  id         String   @id @default(uuid())
+  nome       String
+  funcao     String
+  contacto   String
+  data       DateTime
+  assinatura String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  tenantId   String
+  tenant     Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@map("pessoa_do_contacto")
+}
+
+model ResponsavelPeloPreenchimento {
+  id                     String                   @id @default(uuid())
+  nome                   String
+  funcao                 String
+  contacto               String
+  data                   DateTime
+  assinatura             String?
+  createdAt              DateTime                 @default(now())
+  updatedAt              DateTime                 @updatedAt
+  tenantId               String
+  tenant                 Tenant                   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  triagemAmbientalSocial TriagemAmbientalSocial[]
+
+  @@index([tenantId])
+  @@map("responsavel_pelo_preenchimento")
+}
+
+model ResponsavelPelaVerificacao {
+  id                     String                   @id @default(uuid())
+  nome                   String
+  funcao                 String
+  contacto               String
+  data                   DateTime
+  assinatura             String?
+  createdAt              DateTime                 @default(now())
+  updatedAt              DateTime                 @updatedAt
+  tenantId               String
+  tenant                 Tenant                   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  triagemAmbientalSocial TriagemAmbientalSocial[]
+
+  @@index([tenantId])
+  @@map("responsavel_pela_verificacao")
+}
+
+model BiodeversidadeRecursosNaturais {
+  id                  String                                                    @id @default(uuid())
+  reference           String?
+  description         String
+  createdAt           DateTime                                                  @default(now())
+  updatedAt           DateTime                                                  @updatedAt
+  tenantId            String
+  tenant              Tenant                                                    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  identificacaoRiscos IdentificacaoRiscosImpactosAmbientaisESociaisSubproject[]
+
+  @@index([tenantId])
+  @@map("biodiversidade_recursos_naturais")
+}
+
+model Subprojecto {
+  id                     String                      @id @default(uuid())
+  nome                   String
+  referenciaDoContracto  String?
+  nomeEmpreiteiro        String?
+  custoEstimado          Decimal?                    @db.Decimal(15, 2)
+  localizacao            String
+  coordenadasGeograficas String?
+  tipoSubprojecto        String
+  areaAproximada         String
+  createdAt              DateTime                    @default(now())
+  updatedAt              DateTime                    @updatedAt
+  tenantId               String
+  consultationEngagement ConsultationAndEngagement[]
+  resultadoTriagem       ResultadoTriagem[]
+  tenant                 Tenant                      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  triagemAmbientalSocial TriagemAmbientalSocial[]
+
+  @@index([tenantId])
+  @@map("subprojecto")
+}
+
+model IdentificacaoRiscosImpactosAmbientaisESociaisSubproject {
+  id                               String                                        @id @default(uuid())
+  biodiversidadeRecursosNaturaisId String
+  resposta                         TipoResposta
+  comentario                       String?
+  normaAmbientalSocial             String?
+  createdAt                        DateTime                                      @default(now())
+  updatedAt                        DateTime                                      @updatedAt
+  tenantId                         String
+  biodiversidadeRecursosNaturais   BiodeversidadeRecursosNaturais                @relation(fields: [biodiversidadeRecursosNaturaisId], references: [id], onDelete: Cascade)
+  tenant                           Tenant                                        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  triagemAmbientalSocial           TriagemAmbientalSocialOnIdentificacaoRiscos[]
+
+  @@index([tenantId, biodiversidadeRecursosNaturaisId])
+  @@map("identificacao_riscos_ambientais_sociais_subprojecto")
+}
+
+model TriagemAmbientalSocial {
+  id                             String                                        @id @default(uuid())
+  responsavelPeloPreenchimentoId String
+  responsavelPelaVerificacaoId   String
+  subprojectoId                  String
+  consultaEngajamento            String?
+  accoesRecomendadas             String?
+  resultadoTriagemId             String
+  createdAt                      DateTime                                      @default(now())
+  updatedAt                      DateTime                                      @updatedAt
+  tenantId                       String
+  projectId                      String
+  project                        Project                                       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  responsavelPelaVerificacao     ResponsavelPelaVerificacao                    @relation(fields: [responsavelPelaVerificacaoId], references: [id], onDelete: Cascade)
+  responsavelPeloPreenchimento   ResponsavelPeloPreenchimento                  @relation(fields: [responsavelPeloPreenchimentoId], references: [id], onDelete: Cascade)
+  resultadoTriagem               ResultadoTriagem                              @relation(fields: [resultadoTriagemId], references: [id], onDelete: Cascade)
+  subprojecto                    Subprojecto                                   @relation(fields: [subprojectoId], references: [id], onDelete: Cascade)
+  tenant                         Tenant                                        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  identificacaoRiscos            TriagemAmbientalSocialOnIdentificacaoRiscos[]
+
+  @@index([tenantId, projectId, subprojectoId, responsavelPeloPreenchimentoId, responsavelPelaVerificacaoId, resultadoTriagemId])
+  @@map("triagem_ambiental_social")
+}
+
+model ConsultationAndEngagement {
+  id            String      @id @default(uuid())
+  subprojectoId String
+  details       String
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  tenantId      String
+  projectId     String
+  project       Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  subprojecto   Subprojecto @relation(fields: [subprojectoId], references: [id], onDelete: Cascade)
+  tenant        Tenant      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, projectId, subprojectoId])
+  @@map("consultation_and_engagement")
+}
+
+model ResultadoTriagem {
+  id                              String                   @id @default(uuid())
+  subprojectoId                   String
+  categoriaRisco                  String                   @db.VarChar(15)
+  descricao                       String
+  instrumentosASeremDesenvolvidos String
+  createdAt                       DateTime                 @default(now())
+  updatedAt                       DateTime                 @updatedAt
+  tenantId                        String
+  projectId                       String?
+  Project                         Project?                 @relation(fields: [projectId], references: [id])
+  subprojecto                     Subprojecto              @relation(fields: [subprojectoId], references: [id], onDelete: Cascade)
+  tenant                          Tenant                   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  triagemAmbientalSocial          TriagemAmbientalSocial[]
+
+  @@index([tenantId, subprojectoId])
+  @@map("resultado_triagem")
+}
+
+model FichaInformacaoAmbientalPreliminar {
+  id                                                     String                                             @id @default(uuid())
+  nomeActividade                                         String
+  tipoActividade                                         TipoActividade
+  proponentes                                            String?
+  endereco                                               String
+  telefone                                               String?
+  fax                                                    String?
+  telemovel                                              String?
+  email                                                  String
+  bairroActividade                                       String
+  vilaActividade                                         String
+  cidadeActividade                                       String
+  localidadeActividade                                   String?
+  distritoActividade                                     String?
+  provinciaActividade                                    Provincias
+  coordenadasGeograficas                                 String?
+  meioInsercao                                           MeioInsercao
+  enquadramentoOrcamentoTerritorial                      EnquadramentoOrcamentoTerritorial
+  descricaoActividade                                    String?
+  actividadesAssociadas                                  String?
+  descricaoTecnologiaConstrucaoOperacao                  String?
+  actividadesComplementaresPrincipais                    String?
+  tipoQuantidadeOrigemMaoDeObra                          String?
+  tipoQuantidadeOrigemProvenienciaMateriasPrimas         String?
+  quimicosUtilizados                                     String?
+  tipoOrigemConsumoAguaEnergia                           String?
+  origemCombustiveisLubrificantes                        String?
+  outrosRecursosNecessarios                              String?
+  posseDeTerra                                           String?
+  alternativasLocalizacaoActividade                      String?
+  descricaoBreveSituacaoAmbientalReferenciaLocalRegional String?
+  caracteristicasFisicasLocalActividade                  CaracteristicasFisicaslocalImplantacaoActividades?
+  ecosistemasPredominantes                               Ecossistemaspredominantes?
+  zonaLocalizacao                                        LocationZone?
+  tipoVegetacaoPredominante                              TypeOfPredominantVegetation?
+  usoSolo                                                LandUse?
+  infraestruturaExistenteAreaActividade                  String?
+  informacaoComplementarAtravesMaps                      String?
+  valorTotalInvestimento                                 Decimal?                                           @db.Decimal(15, 2)
+  createdAt                                              DateTime                                           @default(now())
+  updatedAt                                              DateTime                                           @updatedAt
+  tenantId                                               String
+  projectId                                              String
+  project                                                Project                                            @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  tenant                                                 Tenant                                             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, projectId])
+  @@map("ficha_informacao_ambiental_preliminar")
+}
+
+model TriagemAmbientalSocialOnIdentificacaoRiscos {
+  triagemAmbientalSocialId String
+  identificacaoRiscosId    String
+  assignedAt               DateTime                                                @default(now())
+  identificacaoRiscos      IdentificacaoRiscosImpactosAmbientaisESociaisSubproject @relation(fields: [identificacaoRiscosId], references: [id], onDelete: Cascade)
+  triagemAmbientalSocial   TriagemAmbientalSocial                                  @relation(fields: [triagemAmbientalSocialId], references: [id], onDelete: Cascade)
+
+  @@id([triagemAmbientalSocialId, identificacaoRiscosId])
+  @@map("triagem_ambiental_social_identificacao_riscos")
+}
+
+model AreaTreinamento {
+  id                 String              @id @default(uuid()) @db.Uuid
+  name               String              @db.VarChar(255)
+  tenantId           String
+  tenant             Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  matrizTreinamentos MatrizTreinamento[]
+
+  @@index([tenantId])
+  @@map("areas_treinamento")
+}
+
+model CaixaFerramentas {
+  id                 String              @id @default(uuid()) @db.Uuid
+  name               String              @db.VarChar(255)
+  tenantId           String
+  tenant             Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  matrizTreinamentos MatrizTreinamento[]
+
+  @@index([tenantId])
+  @@map("caixa_ferramentas")
+}
+
+model Funcao {
+  id                 String              @id @default(uuid()) @db.Uuid
+  name               String              @db.VarChar(255)
+  tenantId           String
+  tenant             Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  matrizTreinamentos MatrizTreinamento[]
+
+  @@index([tenantId])
+  @@map("funcao")
+}
+
+model MatrizTreinamento {
+  id                                         String           @id @default(uuid()) @db.Uuid
+  data                                       DateTime?        @db.Date
+  funcaoId                                   String           @db.Uuid
+  areaTreinamentoId                          String           @db.Uuid
+  caixaFerramentasId                         String           @db.Uuid
+  totais_palestras                           Int
+  total_horas                                Int
+  total_caixa_ferramentas                    Int
+  total_pessoas_informadas_caixa_ferramentas Int
+  eficacia                                   Eficacia
+  accoes_treinamento_nao_eficaz              String?
+  aprovado_por                               String           @db.VarChar(100)
+  tenantId                                   String
+  projectId                                  String
+  areaTreinamento                            AreaTreinamento  @relation(fields: [areaTreinamentoId], references: [id], onDelete: Cascade)
+  caixa_ferramentas                          CaixaFerramentas @relation(fields: [caixaFerramentasId], references: [id], onDelete: Cascade)
+  funcao                                     Funcao           @relation(fields: [funcaoId], references: [id], onDelete: Cascade)
+  project                                    Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  tenant                                     Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, projectId, funcaoId, areaTreinamentoId, caixaFerramentasId])
+  @@map("matriz_treinamento")
+}
+
 enum RespostaSimNao {
   SIM
   NAO
@@ -420,10 +790,6 @@ enum TipoIncidente {
   FLORA_FAUNA
   AUDITORIA_NAO_CONFORMIDADE
 }
-
-// -----------------------------------------------------------------------------
-// New Enums from the Second Set of Models
-// -----------------------------------------------------------------------------
 
 enum Duracao {
   CURTO_PRAZO
@@ -559,363 +925,7 @@ enum LandUse {
   OUTRO
 }
 
-// -----------------------------------------------------------------------------
-// New Models from the Second Set
-// -----------------------------------------------------------------------------
-
-model FactorAmbientalImpactado {
-  id                           String                                                    @id @default(uuid())
-  descricao                    String
-  createdAt                    DateTime                                                  @default(now())
-  updatedAt                    DateTime                                                  @updatedAt
-  tenantId                     String
-  tenant                       Tenant                                                    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  identificacaoAvaliacaoRiscos IdentificacaoAvaliacaoDeRiscosImapctosAmbientaisSociais[]
-
-  @@index([tenantId])
-  @@map("factor_ambiental_impactado")
-}
-
-model RiscosImpactos {
-  id                           String                                                    @id @default(uuid())
-  descricao                    String
-  createdAt                    DateTime                                                  @default(now())
-  updatedAt                    DateTime                                                  @updatedAt
-  tenantId                     String
-  tenant                       Tenant                                                    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  identificacaoAvaliacaoRiscos IdentificacaoAvaliacaoDeRiscosImapctosAmbientaisSociais[]
-
-  @@index([tenantId])
-  @@map("riscos_impactos")
-}
-
-model IdentificacaoAvaliacaoDeRiscosImapctosAmbientaisSociais {
-  id                             String                   @id @default(uuid())
-  numeroReferencia               String?
-  processo                       String?
-  actiactividade                 String
-  riscosImpactosId               String
-  riscosImpactos                 RiscosImpactos           @relation(fields: [riscosImpactosId], references: [id], onDelete: Cascade)
-  realOuPotencial                String?
-  condicao                       Condicao
-  factorAmbientalImpactadoId     String
-  factorAmbientalImpactado       FactorAmbientalImpactado @relation(fields: [factorAmbientalImpactadoId], references: [id], onDelete: Cascade)
-  faseProjecto                   FaseProjecto
-  estatuto                       Estatuto
-  extensao                       Extensao
-  duduacao                       Duracao
-  intensidade                    Intensidade
-  probabilidade                  Probabilidade
-  significancia                  String?
-  duracaoRisco                   String?
-  descricaoMedidas               String
-  respresponsavelonsible         String?
-  prazo                          DateTime
-  referenciaDocumentoControl     String?
-  legislacaoMocambicanaAplicavel String?
-  observacoes                    String
-  createdAt                      DateTime                 @default(now())
-  updatedAt                      DateTime                 @updatedAt
-  tenantId                       String
-  projectId                      String
-  tenant                         Tenant                   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  project                        Project                  @relation(fields: [projectId], references: [id], onDelete: Cascade)
-
-  @@index([tenantId, projectId, riscosImpactosId, factorAmbientalImpactadoId])
-  @@map("identificacao_avaliacao_riscos_impactos")
-}
-
-model ControleRequisitosLegais {
-  id                    String   @id @default(uuid())
-  numnumero             String
-  tituloDocumento       String
-  descricao             DateTime
-  revocacoesAlteracoes  String?
-  requisitoConformidade String?
-  dataControle          DateTime
-  observation           String?
-  ficheiroDaLei         String?
-  createdAt             DateTime @default(now())
-  updatedAt             DateTime @updatedAt
-  tenantId              String
-  projectId             String
-  tenant                Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  project               Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
-
-  @@index([tenantId, projectId])
-  @@map("controle_requisitos_legais")
-}
-
-model PessoaDoContacto {
-  id         String   @id @default(uuid())
-  nome       String
-  funcao     String
-  contacto   String
-  data       DateTime
-  assinatura String?
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  tenantId   String
-  tenant     Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-
-  @@index([tenantId])
-  @@map("pessoa_do_contacto")
-}
-
-model ResponsavelPeloPreenchimento {
-  id                     String                   @id @default(uuid())
-  nome                   String
-  funcao                 String
-  contacto               String
-  data                   DateTime
-  assinatura             String?
-  createdAt              DateTime                 @default(now())
-  updatedAt              DateTime                 @updatedAt
-  tenantId               String
-  tenant                 Tenant                   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  triagemAmbientalSocial TriagemAmbientalSocial[]
-
-  @@index([tenantId])
-  @@map("responsavel_pelo_preenchimento")
-}
-
-model ResponsavelPelaVerificacao {
-  id                     String                   @id @default(uuid())
-  nome                   String
-  funcao                 String
-  contacto               String
-  data                   DateTime
-  assinatura             String?
-  createdAt              DateTime                 @default(now())
-  updatedAt              DateTime                 @updatedAt
-  tenantId               String
-  tenant                 Tenant                   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  triagemAmbientalSocial TriagemAmbientalSocial[]
-
-  @@index([tenantId])
-  @@map("responsavel_pela_verificacao")
-}
-
-model BiodeversidadeRecursosNaturais {
-  id                  String                                                    @id @default(uuid())
-  reference           String?
-  description         String
-  createdAt           DateTime                                                  @default(now())
-  updatedAt           DateTime                                                  @updatedAt
-  tenantId            String
-  tenant              Tenant                                                    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  identificacaoRiscos IdentificacaoRiscosImpactosAmbientaisESociaisSubproject[]
-
-  @@index([tenantId])
-  @@map("biodiversidade_recursos_naturais")
-}
-
-model Subprojecto {
-  id                     String                      @id @default(uuid())
-  nome                   String
-  referenciaDoContracto  String?
-  nomeEmpreiteiro        String?
-  custoEstimado          Decimal?                    @db.Decimal(15, 2)
-  localizacao            String
-  coordenadasGeograficas String?
-  tipoSubprojecto        String
-  areaAproximada         String
-  createdAt              DateTime                    @default(now())
-  updatedAt              DateTime                    @updatedAt
-  tenantId               String
-  tenant                 Tenant                      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  triagemAmbientalSocial TriagemAmbientalSocial[]
-  consultationEngagement ConsultationAndEngagement[]
-  resultadoTriagem       ResultadoTriagem[]
-
-  @@index([tenantId])
-  @@map("subprojecto")
-}
-
-model IdentificacaoRiscosImpactosAmbientaisESociaisSubproject {
-  id                               String                                        @id @default(uuid())
-  biodiversidadeRecursosNaturaisId String
-  biodiversidadeRecursosNaturais   BiodeversidadeRecursosNaturais                @relation(fields: [biodiversidadeRecursosNaturaisId], references: [id], onDelete: Cascade)
-  resposta                         TipoResposta
-  comentario                       String?
-  normaAmbientalSocial             String?
-  createdAt                        DateTime                                      @default(now())
-  updatedAt                        DateTime                                      @updatedAt
-  tenantId                         String
-  tenant                           Tenant                                        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  triagemAmbientalSocial           TriagemAmbientalSocialOnIdentificacaoRiscos[]
-
-  @@index([tenantId, biodiversidadeRecursosNaturaisId])
-  @@map("identificacao_riscos_ambientais_sociais_subprojecto")
-}
-
-model TriagemAmbientalSocial {
-  id                             String                                        @id @default(uuid())
-  responsavelPeloPreenchimentoId String
-  responsavelPeloPreenchimento   ResponsavelPeloPreenchimento                  @relation(fields: [responsavelPeloPreenchimentoId], references: [id], onDelete: Cascade)
-  responsavelPelaVerificacaoId   String
-  responsavelPelaVerificacao     ResponsavelPelaVerificacao                    @relation(fields: [responsavelPelaVerificacaoId], references: [id], onDelete: Cascade)
-  subprojectoId                  String
-  subprojecto                    Subprojecto                                   @relation(fields: [subprojectoId], references: [id], onDelete: Cascade)
-  consultaEngajamento            String?
-  accoesRecomendadas             String?
-  resultadoTriagemId             String
-  resultadoTriagem               ResultadoTriagem                              @relation(fields: [resultadoTriagemId], references: [id], onDelete: Cascade)
-  createdAt                      DateTime                                      @default(now())
-  updatedAt                      DateTime                                      @updatedAt
-  tenantId                       String
-  projectId                      String
-  tenant                         Tenant                                        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  project                        Project                                       @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  identificacaoRiscos            TriagemAmbientalSocialOnIdentificacaoRiscos[]
-
-  @@index([tenantId, projectId, subprojectoId, responsavelPeloPreenchimentoId, responsavelPelaVerificacaoId, resultadoTriagemId])
-  @@map("triagem_ambiental_social")
-}
-
-model ConsultationAndEngagement {
-  id            String      @id @default(uuid())
-  subprojectoId String
-  subprojecto   Subprojecto @relation(fields: [subprojectoId], references: [id], onDelete: Cascade)
-  details       String
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
-  tenantId      String
-  projectId     String
-  tenant        Tenant      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  project       Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
-
-  @@index([tenantId, projectId, subprojectoId])
-  @@map("consultation_and_engagement")
-}
-
-model ResultadoTriagem {
-  id                              String                   @id @default(uuid())
-  subprojectoId                   String
-  subprojecto                     Subprojecto              @relation(fields: [subprojectoId], references: [id], onDelete: Cascade)
-  categoriaRisco                  String                   @db.VarChar(15)
-  descricao                       String
-  instrumentosASeremDesenvolvidos String
-  createdAt                       DateTime                 @default(now())
-  updatedAt                       DateTime                 @updatedAt
-  tenantId                        String
-  tenant                          Tenant                   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  triagemAmbientalSocial          TriagemAmbientalSocial[]
-  Project                         Project?                 @relation(fields: [projectId], references: [id])
-  projectId                       String?
-
-  @@index([tenantId, subprojectoId])
-  @@map("resultado_triagem")
-}
-
-model FichaInformacaoAmbientalPreliminar {
-  id                                                     String                                             @id @default(uuid())
-  nomeActividade                                         String
-  tipoActividade                                         TipoActividade
-  proponentes                                            String?
-  endereco                                               String
-  telefone                                               String?
-  fax                                                    String?
-  telemovel                                              String?
-  email                                                  String
-  bairroActividade                                       String
-  vilaActividade                                         String
-  cidadeActividade                                       String
-  localidadeActividade                                   String?
-  distritoActividade                                     String?
-  provinciaActividade                                    Provincias
-  coordenadasGeograficas                                 String?
-  meioInsercao                                           MeioInsercao
-  enquadramentoOrcamentoTerritorial                      EnquadramentoOrcamentoTerritorial
-  descricaoActividade                                    String?
-  actividadesAssociadas                                  String?
-  descricaoTecnologiaConstrucaoOperacao                  String?
-  actividadesComplementaresPrincipais                    String?
-  tipoQuantidadeOrigemMaoDeObra                          String?
-  tipoQuantidadeOrigemProvenienciaMateriasPrimas         String?
-  quimicosUtilizados                                     String?
-  tipoOrigemConsumoAguaEnergia                           String?
-  origemCombustiveisLubrificantes                        String?
-  outrosRecursosNecessarios                              String?
-  posseDeTerra                                           String?
-  alternativasLocalizacaoActividade                      String?
-  descricaoBreveSituacaoAmbientalReferenciaLocalRegional String?
-  caracteristicasFisicasLocalActividade                  CaracteristicasFisicaslocalImplantacaoActividades?
-  ecosistemasPredominantes                               Ecossistemaspredominantes?
-  zonaLocalizacao                                        LocationZone?
-  tipoVegetacaoPredominante                              TypeOfPredominantVegetation?
-  usoSolo                                                LandUse?
-  infraestruturaExistenteAreaActividade                  String?
-  informacaoComplementarAtravesMaps                      String?
-  valorTotalInvestimento                                 Decimal?                                           @db.Decimal(15, 2)
-  createdAt                                              DateTime                                           @default(now())
-  updatedAt                                              DateTime                                           @updatedAt
-  tenantId                                               String
-  projectId                                              String
-  tenant                                                 Tenant                                             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  project                                                Project                                            @relation(fields: [projectId], references: [id], onDelete: Cascade)
-
-  @@index([tenantId, projectId])
-  @@map("ficha_informacao_ambiental_preliminar")
-}
-
-model TriagemAmbientalSocialOnIdentificacaoRiscos {
-  triagemAmbientalSocialId String
-  identificacaoRiscosId    String
-  assignedAt               DateTime                                                @default(now())
-  triagemAmbientalSocial   TriagemAmbientalSocial                                  @relation(fields: [triagemAmbientalSocialId], references: [id], onDelete: Cascade)
-  identificacaoRiscos      IdentificacaoRiscosImpactosAmbientaisESociaisSubproject @relation(fields: [identificacaoRiscosId], references: [id], onDelete: Cascade)
-
-  @@id([triagemAmbientalSocialId, identificacaoRiscosId])
-  @@map("triagem_ambiental_social_identificacao_riscos")
-}
-
-/// Organizational Capacity and competency
-
-// Treinamentos model (Training)
-model Treinamentos {
-  id                 String              @id @default(uuid()) @db.Uuid
-  name               String              @db.VarChar(255)
-  matrizTreinamentos MatrizTreinamento[]
-}
-
-// CaixaFerramentas model (Toolbox)
-model CaixaFerramentas {
-  id                 String              @id @default(uuid()) @db.Uuid
-  name               String              @db.VarChar(255)
-  matrizTreinamentos MatrizTreinamento[]
-}
-
-// Funcao model (Function/Role)
-model Funcao {
-  id                 String              @id @default(uuid()) @db.Uuid
-  name               String              @db.VarChar(255)
-  matrizTreinamentos MatrizTreinamento[]
-}
-
-// Enum for Eficacia (Effectiveness)
 enum Eficacia {
   Eficaz
   Nao_Eficaz
-}
-
-// MatrizTreinamento model (Training Matrix)
-model MatrizTreinamento {
-  id                                         String           @id @default(uuid()) @db.Uuid
-  data                                       DateTime?        @db.Date
-  funcaoId                                   String           @db.Uuid
-  funcao                                     Funcao           @relation(fields: [funcaoId], references: [id], onDelete: Cascade)
-  treinamentoId                              String           @db.Uuid
-  treinamento                                Treinamentos     @relation(fields: [treinamentoId], references: [id], onDelete: Cascade)
-  caixaFerramentasId                         String           @db.Uuid
-  caixa_ferramentas                          CaixaFerramentas @relation(fields: [caixaFerramentasId], references: [id], onDelete: Cascade)
-  totais_palestras                           Int
-  total_horas                                Int
-  total_caixa_ferramentas                    Int
-  total_pessoas_informadas_caixa_ferramentas Int
-  eficacia                                   Eficacia
-  accoes_treinamento_nao_eficaz              String?
-  aprovado_por                               String           @db.VarChar(100)
-
-  @@map("FR_AS_005_Matriz_de_Treinamento")
 }

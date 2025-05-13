@@ -218,3 +218,34 @@ export interface FactorAmbientalImpactado {
   tenantId: string;
   projectId: string;
 }
+
+export interface MatrizTreinamento {
+  id?: string;
+  data: Date;
+  funcaoId: string;
+  funcao: {
+    id: string;
+    name: string;
+  };
+  areaTreinamentoId: string;
+  areaTreinamento: {
+    id: string;
+    name: string;
+  };
+  caixaFerramentasId: string;
+  caixaFerramentas: {
+    id: string;
+    name: string;
+  };
+  totais_palestras: number;
+  total_horas: number;
+  total_caixa_ferramentas: number;
+  total_pessoas_informadas_caixa_ferramentas: number;
+  eficacia: 'Eficaz' | 'Nao_Eficaz';
+  accoes_treinamento_nao_eficaz?: string;
+  aprovado_por: string;
+  tenantId: string;
+  projectId: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
