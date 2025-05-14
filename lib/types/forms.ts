@@ -1,7 +1,9 @@
 import { z } from 'zod';
 import { fichaInformacaoSchema } from '@/lib/validations/ficha-informacao';
+import { politicasSchema } from '@/lib/validations/politicas';
 
 export type FichaInformacaoFormData = z.infer<typeof fichaInformacaoSchema>;
+export type PoliticasFormData = z.infer<typeof politicasSchema>;
 
 export interface RelatorioIncidente {
   id?: string;
@@ -244,6 +246,21 @@ export interface MatrizTreinamento {
   eficacia: 'Eficaz' | 'Nao_Eficaz';
   accoes_treinamento_nao_eficaz?: string;
   aprovado_por: string;
+  tenantId: string;
+  projectId: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+export interface Politicas {
+  id?: string;
+  codigo: string;
+  dataCriacao: Date;
+  dataRevisao?: Date | null;
+  nomeDocumento: string;
+  ficheiro: string;
+  estadoDocumento: 'REVISAO' | 'EM_USO' | 'ABSOLETO';
+  periodoRetencao?: Date | null;
   tenantId: string;
   projectId: string;
   createdAt?: Date;

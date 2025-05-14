@@ -1,6 +1,6 @@
 import { INSTITUTIONS } from '@/lib/constants';
 import { projectsData } from '@/lib/mock-data';
-import ProjectDashboardClient from './ProjectDashboardClient';
+import ProjectDashboardClient from '@/app/(tenant)/[tenant]/projects/[projectId]/ProjectDashboardClient';
 
 interface ProjectDashboardProps {
   params: {

@@ -44,6 +44,11 @@ model Tenant {
   transactions                  Transaction[]
   triagemAmbientalSocial        TriagemAmbientalSocial[]
   users                         User[]
+  politicas                     Politicas[]
+  manuais                       Manuais[]
+  procedimentos                 Procedimentos[]
+  formularios                   Formularios[]
+  modelos                       Modelos[]
 
   @@map("tenants")
 }
@@ -67,6 +72,11 @@ model Project {
   resultadoTriagem             ResultadoTriagem[]
   transactions                 Transaction[]
   triagemAmbientalSocial       TriagemAmbientalSocial[]
+  politicas                    Politicas[]
+  manuais                      Manuais[]
+  procedimentos                Procedimentos[]
+  formularios                  Formularios[]
+  modelos                      Modelos[]
 
   @@unique([name, tenantId])
   @@index([tenantId])
@@ -928,4 +938,102 @@ enum LandUse {
 enum Eficacia {
   Eficaz
   Nao_Eficaz
+}
+
+/// ESMS DOCUMENTS
+
+enum EstadoDocumento {
+  REVISAO
+  EM_USO
+  ABSOLETO
+}
+
+model Politicas {
+  id              String          @id @default(uuid())
+  codigo          String
+  dataCriacao     DateTime        @default(now())
+  dataRevisao     DateTime?       @default(now())
+  nomeDocumento   String
+  ficheiro        String
+  estadoDocumento EstadoDocumento
+  periodoRetencao DateTime?
+  tenantId        String
+  tenant          Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  projectId       String
+  project         Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@map("politicas")
+}
+
+model Manuais {
+  id              String          @id @default(uuid())
+  codigo          String
+  dataCriacao     DateTime        @default(now())
+  dataRevisao     DateTime?       @default(now())
+  nomeDocumento   String
+  ficheiro        String
+  estadoDocumento EstadoDocumento
+  periodoRetencao DateTime?
+  tenantId        String
+  tenant          Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  projectId       String
+  project         Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@map("manuais")
+}
+
+model Procedimentos {
+  id              String          @id @default(uuid())
+  codigo          String
+  dataCriacao     DateTime        @default(now())
+  dataRevisao     DateTime?       @default(now())
+  nomeDocumento   String
+  ficheiro        String
+  estadoDocumento EstadoDocumento
+  periodoRetencao DateTime?
+  tenantId        String
+  tenant          Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  projectId       String
+  project         Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@map("procedimentos")
+}
+
+model Formularios {
+  id              String          @id @default(uuid())
+  codigo          String
+  dataCriacao     DateTime        @default(now())
+  dataRevisao     DateTime?       @default(now())
+  nomeDocumento   String
+  ficheiro        String
+  estadoDocumento EstadoDocumento
+  periodoRetencao DateTime?
+  tenantId        String
+  tenant          Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  projectId       String
+  project         Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@map("formularios")
+}
+
+model Modelos {
+  id              String          @id @default(uuid())
+  codigo          String
+  dataCriacao     DateTime        @default(now())
+  dataRevisao     DateTime?       @default(now())
+  nomeDocumento   String
+  ficheiro        String
+  estadoDocumento EstadoDocumento
+  periodoRetencao DateTime?
+  tenantId        String
+  tenant          Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  projectId       String
+  project         Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@map("modelos")
 }

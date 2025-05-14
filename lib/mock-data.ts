@@ -10,7 +10,8 @@ export const projectsData = [
     responsible: 'Carlos Oliveira',
     progress: 65,
     budget: 3500000,
-    description: 'Implementação de sistemas de tratamento de água em áreas rurais para garantir acesso à água potável.',
+    description:
+      'Implementação de sistemas de tratamento de água em áreas rurais para garantir acesso à água potável.',
   },
   {
     id: 'p2',
@@ -23,7 +24,8 @@ export const projectsData = [
     responsible: 'Ana Silva',
     progress: 40,
     budget: 7200000,
-    description: 'Melhoria das infraestruturas de saneamento em áreas urbanas para reduzir riscos de saúde pública.',
+    description:
+      'Melhoria das infraestruturas de saneamento em áreas urbanas para reduzir riscos de saúde pública.',
   },
   {
     id: 'p3',
@@ -36,7 +38,8 @@ export const projectsData = [
     responsible: 'Manuel Costa',
     progress: 10,
     budget: 4800000,
-    description: 'Resposta de emergência e recuperação após ciclones para restabelecer serviços essenciais.',
+    description:
+      'Resposta de emergência e recuperação após ciclones para restabelecer serviços essenciais.',
   },
   {
     id: 'p4',
@@ -49,7 +52,8 @@ export const projectsData = [
     responsible: 'Luísa Mendes',
     progress: 58,
     budget: 2900000,
-    description: 'Expansão do acesso à água potável em comunidades vulneráveis.',
+    description:
+      'Expansão do acesso à água potável em comunidades vulneráveis.',
   },
   {
     id: 'p5',
@@ -62,7 +66,8 @@ export const projectsData = [
     responsible: 'João Ferreira',
     progress: 100,
     budget: 1800000,
-    description: 'Monitoramento da qualidade da água em bacias hidrográficas críticas.',
+    description:
+      'Monitoramento da qualidade da água em bacias hidrográficas críticas.',
   },
   {
     id: 'p6',
@@ -75,7 +80,8 @@ export const projectsData = [
     responsible: 'Teresa Santos',
     progress: 35,
     budget: 5100000,
-    description: 'Desenvolvimento de novas tecnologias para tratamento de águas residuais.',
+    description:
+      'Desenvolvimento de novas tecnologias para tratamento de águas residuais.',
   },
 ];
 
@@ -174,7 +180,8 @@ export const notificationsData = [
   {
     id: 'n1',
     title: 'Prazo se aproximando',
-    message: 'O prazo para entrega do relatório trimestral do Projeto Água Segura vence em 5 dias.',
+    message:
+      'O prazo para entrega do relatório trimestral do Projeto Água Segura vence em 5 dias.',
     date: '2024-04-25T10:30:00',
     read: false,
     type: 'warning',
@@ -183,7 +190,8 @@ export const notificationsData = [
   {
     id: 'n2',
     title: 'Novo documento disponível',
-    message: 'Novo documento "Avaliação de Qualidade da Água" foi adicionado ao projeto CERRP.',
+    message:
+      'Novo documento "Avaliação de Qualidade da Água" foi adicionado ao projeto CERRP.',
     date: '2024-04-24T14:15:00',
     read: false,
     type: 'info',
@@ -192,7 +200,8 @@ export const notificationsData = [
   {
     id: 'n3',
     title: 'Atualização de status',
-    message: 'O status do Projeto de Saneamento Urbano foi alterado para "Em andamento".',
+    message:
+      'O status do Projeto de Saneamento Urbano foi alterado para "Em andamento".',
     date: '2024-04-23T09:45:00',
     read: true,
     type: 'success',
@@ -201,7 +210,8 @@ export const notificationsData = [
   {
     id: 'n4',
     title: 'Reunião agendada',
-    message: 'Reunião de revisão do Projeto XXXXX agendada para 30/04/2024 às 14:00.',
+    message:
+      'Reunião de revisão do Projeto XXXXX agendada para 30/04/2024 às 14:00.',
     date: '2024-04-22T16:20:00',
     read: true,
     type: 'info',
@@ -210,7 +220,8 @@ export const notificationsData = [
   {
     id: 'n5',
     title: 'Atraso identificado',
-    message: 'O Projeto XXXXX está atrasado em relação ao cronograma previsto. Ação necessária.',
+    message:
+      'O Projeto XXXXX está atrasado em relação ao cronograma previsto. Ação necessária.',
     date: '2024-04-21T11:00:00',
     read: true,
     type: 'error',
@@ -219,6 +230,14 @@ export const notificationsData = [
 ];
 
 export const usersData = [
+  {
+    id: 'u0',
+    name: 'Admin',
+    email: 'admin@email.com',
+    institution: 'aias',
+    role: 'admin',
+    lastActive: '2024-04-26T10:00:00',
+  },
   {
     id: 'u1',
     name: 'Carlos Oliveira',
